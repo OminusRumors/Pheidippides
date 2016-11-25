@@ -1,11 +1,11 @@
-package events.correlator.database;
+package events.correlator.Pheidippides.database;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import events.correlator.resources.Event.FwEvent;
-import events.correlator.resources.Event.MsEvent;
+import events.correlator.Pheidippides.models.FwEvent;
+import events.correlator.Pheidippides.models.MsEvent;
 
 public final class DbConnector {
 	static Connection con;

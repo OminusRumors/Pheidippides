@@ -1,13 +1,13 @@
-package events.correlator.resources.filter;
+package events.correlator.Pheidippides.filter;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import events.correlator.database.DbConnector;
-import events.correlator.resources.Event.Event;
-import events.correlator.resources.Event.MsEvent;
-import events.correlator.resources.Event.FwEvent;
+import events.correlator.Pheidippides.database.DbConnector;
+import events.correlator.Pheidippides.models.Event;
+import events.correlator.Pheidippides.models.MsEvent;
+import events.correlator.Pheidippides.models.FwEvent;
 
 public class Filter {
 	

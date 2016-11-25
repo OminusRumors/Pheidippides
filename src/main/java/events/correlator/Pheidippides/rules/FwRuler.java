@@ -1,11 +1,11 @@
-package events.correlator.resources.Rules;
+package events.correlator.Pheidippides.rules;
 
 import java.util.Date;
 import java.util.List;
 
-import events.correlator.database.DbConnector;
-import events.correlator.resources.Event.FwEvent;
-import events.correlator.utilities.Helper;
+import events.correlator.Pheidippides.database.DbConnector;
+import events.correlator.Pheidippides.models.FwEvent;
+import events.correlator.Pheidippides.utilities.Helper;
 
 public class FwRuler {
 
