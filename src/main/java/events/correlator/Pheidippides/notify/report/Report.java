@@ -16,7 +16,7 @@ import javax.ws.rs.core.MediaType;
 
 import events.correlator.Pheidippides.database.DbConnector;
 
-@Path("/reports")
+@Path("/rep")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class Report {
@@ -32,7 +32,7 @@ public class Report {
 	}
 	
 	@GET
-	@Path("/this")
+	@Produces(MediaType.TEXT_PLAIN)
 	public String ep(){
 		return "apsoy";
 	}
