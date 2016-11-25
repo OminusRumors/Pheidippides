@@ -16,7 +16,7 @@ import javax.ws.rs.core.MediaType;
 
 import events.correlator.Pheidippides.database.DbConnector;
 
-@Path("/rep")
+@Path("/reports")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class Report {
@@ -33,12 +33,13 @@ public class Report {
 	
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
-	public String ep(){
-		return "apsoy";
+	public String getThis(){
+		return "It WORKS!!";
 	}
 	
 	@GET
 	@Path("/topDestinations")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Map<String, Integer> topDestinations(@QueryParam("top") int top, @QueryParam("start") Date start, @QueryParam("end") Date end){
 		Map<String, Integer> resultMap=new HashMap<String, Integer>();
 		String startDate=new SimpleDateFormat("yyyy-MM-dd").format(start);
