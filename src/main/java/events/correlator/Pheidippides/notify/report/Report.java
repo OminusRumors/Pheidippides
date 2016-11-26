@@ -13,6 +13,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import events.correlator.Pheidippides.database.DbConnector;
 
@@ -37,18 +38,40 @@ public class Report {
 		return "It WORKS!!";
 	}
 	
+	private String checkDateTime(String date){
+		try{
+			String startDate=new SimpleDateFormat("yyyy-MM-dd").format(date);
+			return startDate;
+		}
+		catch(IllegalArgumentException e){
+			String startDate=new SimpleDateFormat("HH:mm:ss").format(date);
+			return startDate;
+		}
+		catch (NullPointerException e) {
+			return null;
+		}
+		catch (Exception e){
+			System.out.println(e.getMessage());
+			return null;
+		}
+	}
+	
 	@GET
 	@Path("/topDestinations")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Map<String, Integer> topDestinations(@QueryParam("top") int top, @QueryParam("start") Date start, @QueryParam("end") Date end){
-		Map<String, Integer> resultMap=new HashMap<String, Integer>();
-		String startDate=new SimpleDateFormat("yyyy-MM-dd").format(start);
-		String startTime=new SimpleDateFormat("HH:mm:ss").format(start.getTime());
-		String endDate=new SimpleDateFormat("yyyy-MM-dd").format(end);
-		String endTime=new SimpleDateFormat("HH:mm:ss").format(end.getTime());
-		String sql="SELECT dstip, count(dstip) FROM firewall_traffic_log WHERE type='traffic' AND date BETWEEN " + startDate + " AND " + endDate + " AND time BETWEEN " + startTime + " AND " + endTime + " GROUP BY dstip ORDER BY count(dstip) DESC LIMIT " + Integer.toString(top) + ";";
-		ResultSet result=dbc.customQuery(sql);
+	public Map<String, Integer> topDestinations(@QueryParam("top") int top, @QueryParam("start") String start, 
+			@QueryParam("end") String end){
+		
+		String startDate=checkDateTime(start);
+		String startTime=checkDateTime(start);
+		String endDate=checkDateTime(end);
+		String endTime=checkDateTime(end);
+		String sql="SELECT dstip, count(dstip) FROM firewall_traffic_log WHERE type='traffic' AND date BETWEEN " + startDate + 
+				" AND " + endDate + " AND time BETWEEN " + startTime + " AND " + endTime + 
+				" GROUP BY dstip ORDER BY count(dstip) DESC LIMIT " + Integer.toString(top) + ";";
 		try {
+			ResultSet result=dbc.customQuery(sql);
+			Map<String, Integer> resultMap = new HashMap<String, Integer>();
 			while(result.next()){
 				if (result.getString(0)!="255.255.255.255"){
 					resultMap.put(result.getString(0), result.getInt(1));
@@ -62,4 +85,6 @@ public class Report {
 			return null;
 		}
 	}
+	
+	
 }
