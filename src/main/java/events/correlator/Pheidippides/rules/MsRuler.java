@@ -1,4 +1,4 @@
-package events.correlator.resources.Rules;
+package events.correlator.Pheidippides.rules;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,19 +8,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import events.correlator.database.DbConnector;
-import events.correlator.resources.notify.Alert.Alert;
-import events.correlator.resources.Event.Event;
-import events.correlator.resources.Event.MsEvent;
-import events.correlator.utilities.Helper;
+import events.correlator.Pheidippides.database.DbConnector;
+import events.correlator.Pheidippides.notify.alert.Alert;
+//import events.correlator.Pheidippides.models.Event;
+import events.correlator.Pheidippides.models.MsEvent;
+import events.correlator.Pheidippides.utilities.Helper;
 
 public class MsRuler {
 	private DbConnector dbc;
-	private Alert alert;
+//	private Alert alert;
 
 	public MsRuler(DbConnector dbc) {
 		this.dbc = dbc;
-		this.alert=new Alert();
+//		this.alert=new Alert();
 	}
 
 	public MsRuler() {
@@ -107,7 +107,9 @@ public class MsRuler {
 					else{
 						reportData.put("reason", "unknown");
 					}
-					alert.sendEmail({"georgevassiliadis@hotmail.com", "georgios.vasileiadis@diagnostiekvooru.nl"}, reportData);
+					String[] rec={"georgevassiliadis@hotmail.com", "georgios.vasileiadis@diagnostiekvooru.nl"};
+					//alert.sendEmail({"georgevassiliadis@hotmail.com", "georgios.vasileiadis@diagnostiekvooru.nl"}, reportData);
+					Alert.sendEmail(rec, reportData);
 				}
 			}
 		}

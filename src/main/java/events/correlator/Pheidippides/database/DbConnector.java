@@ -189,7 +189,6 @@ public final class DbConnector {
 			Statement stm = con.createStatement();
 			ResultSet raw_log = null;
 			List<MsEvent> eventList = new ArrayList<MsEvent>();
-			// List<Event> eventList = new ArrayList<Event>();
 			if (filtered) {
 				raw_log = stm.executeQuery(queryFsecurity + datesToSting(startDate, endDate));
 			} else if (!filtered) {
