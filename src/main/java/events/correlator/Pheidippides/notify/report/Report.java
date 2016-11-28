@@ -14,6 +14,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import events.correlator.Pheidippides.database.DbConnector;
 
@@ -36,6 +37,24 @@ public class Report {
 	@Produces(MediaType.TEXT_PLAIN)
 	public String getThis(){
 		return "It WORKS!!";
+	}
+	
+	private String checkDateTime(String date){
+		try{
+			String startDate=new SimpleDateFormat("yyyy-MM-dd").format(date);
+			return startDate;
+		}
+		catch(IllegalArgumentException e){
+			String startDate=new SimpleDateFormat("HH:mm:ss").format(date);
+			return startDate;
+		}
+		catch (NullPointerException e) {
+			return null;
+		}
+		catch (Exception e){
+			System.out.println(e.getMessage());
+			return null;
+		}
 	}
 	
 	@GET
@@ -133,4 +152,6 @@ public class Report {
 			return null;
 		}
 	}
+	
+	
 }
