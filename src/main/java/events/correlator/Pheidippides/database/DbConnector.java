@@ -29,6 +29,7 @@ public final class DbConnector {
 		try {
 			con = DriverManager.getConnection("jdbc:sqlite:C:/Users/George/Desktop/software tools/test.db");
 		} catch (SQLException e) {
+			System.out.println("Connection failed.");
 			System.out.println(e.getMessage());
 		}
 	}
@@ -96,7 +97,7 @@ public final class DbConnector {
 
 			raw = stm.executeQuery(sql);
 			while (raw.next()) {
-				MsEvent ms_event = new MsEvent(raw.getInt("keyId"), raw.getString("sourceLog"), raw.getDate("created"),
+				MsEvent ms_event = new MsEvent(raw.getInt("ROWID"), raw.getString("sourceLog"), raw.getDate("timeCreated"),
 						raw.getInt("eventId"), raw.getString("keywords"), raw.getString("subjectLogonId"),
 						raw.getString("handleId"), raw.getString("logonId"), raw.getString("status"),
 						raw.getString("substatus"), raw.getInt("logonType"), raw.getString("targetUsername"),
@@ -107,6 +108,7 @@ public final class DbConnector {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.out.println("GetByEventId failed.");
 			System.out.println(e.getMessage());
 			return null;
 		}
@@ -294,6 +296,6 @@ public final class DbConnector {
 	}
 
 	private String datesToSting(Date start, Date end) {
-		return " created BETWEEN " + start.toString() + " AND " + end.toString();
+		return " timecreated BETWEEN " + start.toString() + " AND " + end.toString();
 	}
 }
