@@ -1,7 +1,9 @@
 package events.correlator.Pheidippides.database;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import events.correlator.Pheidippides.models.FwEvent;
@@ -117,24 +119,30 @@ public final class DbConnector {
 	public boolean setMsFiltered(MsEvent event) {
 		try {
 			con.setAutoCommit(false);
-			String sql = "INSERT INTO filtered_ms VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			String sql = "INSERT INTO filtered_ms VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 			PreparedStatement prstm = con.prepareStatement(sql);
-			Date utilDate = event.getCreated();
-			java.sql.Date created = new java.sql.Date(utilDate.getTime());
-			prstm.setString(1, event.getSourceLog());
-			prstm.setInt(2, event.getEventId());
-			prstm.setString(3, event.getKeywords());
-			prstm.setDate(4, created);
-			prstm.setString(5, event.getSubjectLogonId());
-			prstm.setString(6, event.getHandleId());
-			prstm.setString(7, event.getLogonId());
-			prstm.setString(8, event.getStatus());
-			prstm.setString(9, event.getSubstatus());
-			prstm.setInt(10, event.getLogonType());
-			prstm.setString(11, event.getTargetDomainName());
-			prstm.setString(12, event.getTargetUsername());
-			prstm.setString(13, event.getIpAddress());
-			prstm.setString(14, event.getApp());
+			
+			Calendar cal=Calendar.getInstance();
+			cal.setTime(event.getCreated());
+			java.sql.Date created = new java.sql.Date(cal.getTimeInMillis());
+			SimpleDateFormat df=new SimpleDateFormat("yyyy-MM-dd");
+			df.format(created);
+			
+			prstm.setInt(1, event.getKeyId());
+			prstm.setString(2, event.getSourceLog());	
+			prstm.setInt(3, event.getEventId());
+			prstm.setString(4, event.getKeywords());
+			prstm.setString(5, df.format(created));
+			prstm.setString(6, event.getSubjectLogonId());
+			prstm.setString(7, event.getHandleId());
+			prstm.setString(8, event.getLogonId());
+			prstm.setString(9, event.getStatus());
+			prstm.setString(10, event.getSubstatus());
+			prstm.setInt(11, event.getLogonType());
+			prstm.setString(12, event.getTargetDomainName());
+			prstm.setString(13, event.getTargetUsername());
+			prstm.setString(14, event.getIpAddress());
+			prstm.setString(15, event.getApp());
 			prstm.executeUpdate();
 			con.commit();
 			return true;

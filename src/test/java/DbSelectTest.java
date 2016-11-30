@@ -2,7 +2,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -52,5 +51,25 @@ public class DbSelectTest {
 		
 		assertEquals("Checking targetDomainName1",shouldBe1,is1);
 		assertEquals("Checking targetDomainName2",shouldBe2,is2);
+	}
+	
+	@Test
+	public void testMsInsert(){
+		try{
+			dbc=new DbConnector();
+		}
+		catch(Exception e){
+			System.out.println(e.getLocalizedMessage());
+		}
+		Calendar cal=Calendar.getInstance();
+		cal.set(Calendar.YEAR, 2000);
+		cal.set(Calendar.MONTH, 0);
+		cal.set(Calendar.DATE, 30);
+//		cal.set(Calendar.HOUR, 14);
+//		cal.set(Calendar.MINUTE, 50);
+		MsEvent event=new MsEvent(9999, "security", cal.getTime(), 999, "mockEvent");
+		MsEvent e=new MsEvent(057, "dfsd", cal.getTime(), 123, "dfsdf");
+		assertEquals(true, dbc.setMsFiltered(e));
+		assertEquals("Insert ms event", true, dbc.setMsFiltered(event));
 	}
 }
