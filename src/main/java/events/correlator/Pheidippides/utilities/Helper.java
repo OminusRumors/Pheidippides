@@ -1,5 +1,6 @@
 package events.correlator.Pheidippides.utilities;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +26,16 @@ public final class Helper {
 
 	public static Map<String, Integer> getFwLevels() {
 		return Fw_levels;
+	}
+	
+	public java.sql.Date calToDate(Calendar cal){
+		return new java.sql.Date(cal.getTimeInMillis());
+	}
+	
+	public Calendar dateToCal(java.sql.Date date){
+		Calendar cal=Calendar.getInstance();
+		cal.setTime(date);
+		return cal;
 	}
 
 	private final static void populateLogonTypes() {

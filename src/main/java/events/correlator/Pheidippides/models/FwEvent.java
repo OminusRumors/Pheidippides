@@ -1,6 +1,6 @@
 package events.correlator.Pheidippides.models;
 
-import java.util.Date;
+import java.util.Calendar;
 
 public class FwEvent extends Event{
 	
@@ -12,7 +12,7 @@ public class FwEvent extends Event{
 	private String dstCountry;
 	private String dstIntf;
 	private String srcIp;
-	public FwEvent(int keyId, String sourceLog, Date created, String type, String subtype, String level,
+	public FwEvent(int keyId, String sourceLog, Calendar created, String type, String subtype, String level,
 			String action, String dstIp, String dstCountry, String dstIntf, String srcIp, String srcCountry,
 			String srcIntf, String app, String msg, String recepient, String sender, String service, String ref) {
 		super(keyId, sourceLog, created);
@@ -43,20 +43,20 @@ public class FwEvent extends Event{
 	private String service;
 	private String ref;
 	
-	public FwEvent(int keyId, String sourceLog, Date created, String type, String subtype) {
+	public FwEvent(int keyId, String sourceLog, Calendar created, String type, String subtype) {
 		super(keyId, sourceLog, created);
 		this.type = type;
 		this.subtype = subtype;
 	}
 
-	public FwEvent(int keyId, String sourceLog, Date created, String type, String subtype, String action) {
+	public FwEvent(int keyId, String sourceLog, Calendar created, String type, String subtype, String action) {
 		super(keyId, sourceLog, created);
 		this.type = type;
 		this.subtype = subtype;
 		this.action = action;
 	}
 
-	public FwEvent(int keyId, String sourceLog, Date created, String type, String subtype, String level,
+	public FwEvent(int keyId, String sourceLog, Calendar created, String type, String subtype, String level,
 			String action) {
 		super(keyId, sourceLog, created);
 		this.type = type;

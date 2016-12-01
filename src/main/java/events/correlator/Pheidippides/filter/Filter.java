@@ -1,11 +1,10 @@
 package events.correlator.Pheidippides.filter;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 
 import events.correlator.Pheidippides.database.DbConnector;
-import events.correlator.Pheidippides.models.Event;
 import events.correlator.Pheidippides.models.MsEvent;
 import events.correlator.Pheidippides.models.FwEvent;
 
@@ -29,7 +28,7 @@ public class Filter {
 		msFilteredList=new ArrayList<MsEvent>();
 	}
 	
-	public void getAllByType(String sourceLog, Date start, Date end){
+	public void getAllByType(String sourceLog, Calendar start, Calendar end){
 		
 		switch (sourceLog){
 		case "security":

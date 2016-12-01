@@ -1,21 +1,21 @@
 package events.correlator.Pheidippides.models;
 
-import java.util.Date;
+import java.util.Calendar;
 
 public abstract class Event {
 	private int keyId;
 	private String sourceLog;
-	private Date created;
+	private Calendar created;
 	private String app;
 	
-	public Event(int keyId, String sourceLog, Date created) {
+	public Event(int keyId, String sourceLog, Calendar created) {
 		super();
 		this.keyId = keyId;
 		this.sourceLog = sourceLog;
 		this.created = created;
 	}
 	
-	public Event(int keyId, String sourceLog, Date created, String app) {
+	public Event(int keyId, String sourceLog, Calendar created, String app) {
 		super();
 		this.keyId = keyId;
 		this.sourceLog = sourceLog;
@@ -29,7 +29,7 @@ public abstract class Event {
 	public String getSourceLog() {
 		return sourceLog;
 	}
-	public Date getCreated() {
+	public Calendar getCreated() {
 		return created;
 	}
 	

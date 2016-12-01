@@ -3,7 +3,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({DbSelectTest.class})
+@SuiteClasses({DbTests.class})
 public class TestSuite {
 
 }

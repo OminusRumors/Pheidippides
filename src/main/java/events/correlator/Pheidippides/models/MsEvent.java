@@ -1,6 +1,6 @@
 package events.correlator.Pheidippides.models;
 
-import java.util.Date;
+import java.util.Calendar;
 
 public class MsEvent extends Event{
 
@@ -16,7 +16,7 @@ public class MsEvent extends Event{
 	private String targetDomainName;
 	private String ipAddress;
 	
-	public MsEvent(int keyId, String sourceLog, Date created, int eventId, String keywords, String subjectLogonId,
+	public MsEvent(int keyId, String sourceLog, Calendar created, int eventId, String keywords, String subjectLogonId,
 			String handleId, String logonId, String status, String substatus, int logonType, String targetUsername,
 			String targetDomainName, String ipAddress) {
 		super(keyId, sourceLog, created);
@@ -33,7 +33,7 @@ public class MsEvent extends Event{
 		this.ipAddress = ipAddress;
 	}
 
-	public MsEvent(int keyId, String sourceLog, Date created, int eventId, String keywords) {
+	public MsEvent(int keyId, String sourceLog, Calendar created, int eventId, String keywords) {
 		super(keyId, sourceLog, created);
 		this.eventId = eventId;
 		this.keywords = keywords;
