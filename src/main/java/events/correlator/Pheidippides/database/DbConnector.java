@@ -337,13 +337,13 @@ public final class DbConnector {
 			System.out.println(e.getLocalizedMessage());
 		} catch (Exception e) {
 			try {
-				e.printStackTrace(new PrintStream("C:/Users/George/OneDriveGraduation Internship/docs/tekst.txt"));
+				e.printStackTrace(new PrintStream("C:/Users/George/OneDrive/Graduation Internship/docs/tekst.txt"));
 			} catch (FileNotFoundException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			System.out.println("getFwTraffic failed.");
-			System.out.println(e.getMessage());
+			System.out.println(e.getLocalizedMessage());
 		}
 		return null;
 	}

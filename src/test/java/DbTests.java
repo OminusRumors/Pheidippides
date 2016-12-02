@@ -41,10 +41,16 @@ public class DbTests {
 //		end=Cend.getTime();
 	}
 	
-	protected void tearDown() throws SQLException{
+	protected void tearDown(){
 		dbc.customQuery("DELETE * FROM filtered_ms");
 		dbc.customQuery("DELETE * FROM filtered_fw");
-		dbc.getConnection().commit();
+		try {
+			dbc.getConnection().commit();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println(e.getLocalizedMessage());
+		}
 	}
 	
 	@Test
@@ -111,7 +117,7 @@ public class DbTests {
 		assertEquals(expEvent2, eventList.get(1));
 	}
 	
-	@Test @Ignore
+	@Test
 	public void testMsInsert(){
 		try{
 			dbc=new DbConnector();
@@ -195,7 +201,8 @@ public class DbTests {
 					rs.getString("keywords")));
 		}
 		
-		assertEquals(expList, actList);
+		assertEquals(expList.get(0), actList.get(0));
+		assertEquals(expList.get(1), actList.get(1));
 	}
 	
 }
