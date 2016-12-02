@@ -32,7 +32,7 @@ public class MsRuler {
 	 * @param window The time window in seconds.
 	 * @return A calendar array.
 	 */
-	private Calendar[] dateToCalRange(Date current, int window) {
+	private Calendar[] dateToCalRange(Calendar current, int window) {
 		Calendar[] retArray = new Calendar[3];
 
 		// transforms the DATE of the event to CALENDAR instance
@@ -55,7 +55,7 @@ public class MsRuler {
 		return retArray;
 	}
 
-	public void checkId4625(Date start, Date end) {
+	public void checkId4625(Calendar start, Calendar end) {
 		List<MsEvent> eventList = dbc.getMsByEventId(4625, true, start, end); // get all events with id 4625
 		List<MsEvent> eventUserList = new ArrayList<MsEvent>();
 		List<MsEvent> finalList=new ArrayList<MsEvent>();
@@ -115,7 +115,7 @@ public class MsRuler {
 		}
 	}
 
-	public void checkId4768(Date start, Date end) {
+	public void checkId4768(Calendar start, Calendar end) {
 
 		List<MsEvent> list4768 = dbc.getMsByEventId(4768, true, start, end);
 		List<MsEvent> newList4768 = new ArrayList<MsEvent>();
@@ -149,7 +149,7 @@ public class MsRuler {
 		}
 	}
 
-	public void checkId4769(Date start, Date end) {
+	public void checkId4769(Calendar start, Calendar end) {
 		List<MsEvent> orgEventList = dbc.getMsByEventId(4769, true, start, end);
 		List<MsEvent> filtList = new ArrayList<MsEvent>();
 		List<MsEvent> finalList = new ArrayList<MsEvent>();

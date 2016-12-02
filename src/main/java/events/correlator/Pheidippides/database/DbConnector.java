@@ -7,12 +7,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Properties;
+
+import org.sqlite.SQLiteConfig;
+import org.sqlite.SQLiteConfig.Pragma;
+
 import events.correlator.Pheidippides.models.FwEvent;
 import events.correlator.Pheidippides.models.MsEvent;
 import events.correlator.Pheidippides.utilities.Helper;
 
 public final class DbConnector {
-	static Connection con;
+	private static Connection con;
 
 	final static String queryFsecurity = "SELECT * FROM filtered_ms WHERE sourceLog = 'security' AND ";
 	final static String queryFmssql = "SELECT * FROM filtered_ms WHERE sourceLog = 'mssql' AND";
@@ -31,15 +36,21 @@ public final class DbConnector {
 	public DbConnector() throws ClassNotFoundException {
 		// load the sqlite-JDBC driver using the current class loader
 		Class.forName("org.sqlite.JDBC");
-
+		SQLiteConfig sqLiteConfig = new SQLiteConfig();
+		Properties properties = sqLiteConfig.toProperties();
+		properties.setProperty(Pragma.DATE_STRING_FORMAT.pragmaName, "yyyy-MM-dd HH:mm:ss");
 		con = null;
 
 		try {
-			con = DriverManager.getConnection("jdbc:sqlite:C:/Users/George/Desktop/software tools/test.db");
+			con = DriverManager.getConnection("jdbc:sqlite:C:/Users/George/Desktop/software tools/test.db", properties);
 		} catch (SQLException e) {
 			System.out.println("Connection failed.");
 			System.out.println(e.getLocalizedMessage());
 		}
+	}
+	
+	public Connection getConnection(){
+		return DbConnector.con;
 	}
 	
 	public ResultSet customQuery(String sql){
@@ -60,23 +71,24 @@ public final class DbConnector {
 		Statement stm;
 		try {
 			stm = con.createStatement();
-			ResultSet raw_log = null;
+			ResultSet raw_log;
 			List<FwEvent> eventList = new ArrayList<FwEvent>();
 			String sql;
 			
-			if (type.toLowerCase() == "Traffic".toLowerCase()) {
-				sql = "SELECT * FROM filtered_fw WHERE lower(type)='traffic' AND created BETWEEN " + datesToSting(start, end);
+			if (type.equalsIgnoreCase("traffic")) {
+				sql = "SELECT * FROM filtered_fw WHERE type='traffic' AND created BETWEEN " + datesToSting(start, end);
 			} else {
-				sql = "SELECT * FROM filtered_fw WHERE lower(subtype)=lower(" + type + ") AND created BETWEEN " + 
+				sql = "SELECT * FROM filtered_fw WHERE lower(subtype)=lower('" + type + "') AND created BETWEEN " + 
 			datesToSting(start, end);
 			}
 			
 			raw_log=stm.executeQuery(sql);
 			while (raw_log.next()) {
 				Calendar cal=Calendar.getInstance();
+				System.out.println(raw_log.getString("created"));
 				cal.setTime(raw_log.getDate("created"));
 				
-				FwEvent fw_event = new FwEvent(raw_log.getInt("keyId"), raw_log.getString("sourceLog"),
+				FwEvent fw_event = new FwEvent(raw_log.getInt("RowId"), raw_log.getString("sourceLog"),
 						cal, raw_log.getString("type"), raw_log.getString("subtype"),
 						raw_log.getString("level"), raw_log.getString("action"), raw_log.getString("dstip"),
 						raw_log.getString("dstcountry"), raw_log.getString("dstintf"), raw_log.getString("srcip"),
@@ -88,7 +100,8 @@ public final class DbConnector {
 			return eventList;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			System.out.println(e.getMessage());
+			System.out.println(e.getLocalizedMessage());
+			System.out.println("DbConnector.getFwByType SQLException");
 			return null;
 		}
 	}
@@ -336,8 +349,7 @@ public final class DbConnector {
 	}
 
 	private String datesToSting(Calendar start, Calendar end) {
-		SimpleDateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
-		
-		return dateFormat.format(start.getTime()) + " AND " + dateFormat.format(end.getTime());
+		SimpleDateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		return "'" + dateFormat.format(start.getTime()) + "' AND '" + dateFormat.format(end.getTime()) + "'";
 	}
 }

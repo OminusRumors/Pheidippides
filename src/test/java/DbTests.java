@@ -41,9 +41,10 @@ public class DbTests {
 //		end=Cend.getTime();
 	}
 	
-	protected void tearDown(){
+	protected void tearDown() throws SQLException{
 		dbc.customQuery("DELETE * FROM filtered_ms");
 		dbc.customQuery("DELETE * FROM filtered_fw");
+		dbc.getConnection().commit();
 	}
 	
 	@Test
@@ -70,6 +71,46 @@ public class DbTests {
 		assertEquals("Checking targetDomainName2",shouldBe2,is2);
 	}
 	
+	@Test
+	public void getFwByTypeTest(){
+		
+		Calendar cal1=Calendar.getInstance();
+		cal1.set(2000, 1, 01, 0, 0, 0);
+		Calendar cal2=Calendar.getInstance();
+		cal2.set(2010, 3, 4, 7, 52, 12);
+		List<FwEvent> eventList=dbc.getFwByType("traffic", cal1, cal2);
+		
+		//set first expected event
+		Calendar expCal=Calendar.getInstance();
+		expCal.set(2000, 1, 1, 0, 0, 0);
+		FwEvent expEvent1=new FwEvent(0, "fwEvent", expCal, "traffic", "local");
+		expEvent1.setLevel("notice");
+		expEvent1.setAction("allow");
+		expEvent1.setDstIp("111.222.333.444");
+		expEvent1.setDstCountry("NoLand");
+		expEvent1.setDstIntf("pirate");
+		expEvent1.setSrcIp("this.srcIp");
+		expEvent1.setSrcCountry("NL");
+		expEvent1.setSrcIntf("DvU");
+		expEvent1.setApp("-");
+		expEvent1.setMsg("Nothing happened");
+		
+		//set second expected event
+		expCal.set(2000, 4, 04, 06, 25, 2);
+		FwEvent expEvent2=new FwEvent(1, "fwTraffic", expCal, "event", "system");
+		expEvent1.setLevel("information");
+		expEvent1.setDstIp("555.666.77.8");
+		expEvent1.setDstCountry("this dst cnt");
+		expEvent1.setRecepient("me");
+		expEvent1.setSender("virg");
+		expEvent1.setService("smtp");
+		
+//		System.out.println(eventList.size());
+		
+		assertEquals(expEvent1, eventList.get(0));
+		assertEquals(expEvent2, eventList.get(1));
+	}
+	
 	@Test @Ignore
 	public void testMsInsert(){
 		try{
@@ -90,7 +131,7 @@ public class DbTests {
 		assertEquals("Insert ms event", true, dbc.setMsFiltered(event));
 	}
 	
-	@Test @Ignore 
+	@Test
 	public void testSelectFwFiltered(){
 		try{
 			dbc=new DbConnector();
