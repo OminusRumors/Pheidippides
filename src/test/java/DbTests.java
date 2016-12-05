@@ -6,6 +6,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -32,7 +34,8 @@ public class DbTests {
 		}
 	}
 	
-	protected void setUp(){
+	
+	public void setUp(){
 		start=Calendar.getInstance();
 		end=Calendar.getInstance();
 		start.set(2016, 9, 01);
@@ -41,9 +44,10 @@ public class DbTests {
 //		end=Cend.getTime();
 	}
 	
-	protected void tearDown(){
-		dbc.customQuery("DELETE * FROM filtered_ms");
-		dbc.customQuery("DELETE * FROM filtered_fw");
+	
+	public void tearDown(){
+		dbc.customQuery("DELETE FROM filtered_ms");
+		dbc.customQuery("DELETE FROM filtered_fw WHERE rowid=999");
 		try {
 			dbc.getConnection().commit();
 		} catch (SQLException e) {
@@ -79,42 +83,70 @@ public class DbTests {
 	
 	@Test
 	public void getFwByTypeTest(){
-		
+			
 		Calendar cal1=Calendar.getInstance();
-		cal1.set(2000, 1, 01, 0, 0, 0);
+		cal1.set(2000, 0, 01, 0, 0, 0);
 		Calendar cal2=Calendar.getInstance();
 		cal2.set(2010, 3, 4, 7, 52, 12);
 		List<FwEvent> eventList=dbc.getFwByType("traffic", cal1, cal2);
 		
-		//set first expected event
-		Calendar expCal=Calendar.getInstance();
-		expCal.set(2000, 1, 1, 0, 0, 0);
-		FwEvent expEvent1=new FwEvent(0, "fwEvent", expCal, "traffic", "local");
+		//set first expected event;
+		FwEvent expEvent1=new FwEvent(100, "fwTraffic", cal1, "traffic", "local");
 		expEvent1.setLevel("notice");
 		expEvent1.setAction("allow");
-		expEvent1.setDstIp("111.222.333.444");
-		expEvent1.setDstCountry("NoLand");
-		expEvent1.setDstIntf("pirate");
-		expEvent1.setSrcIp("this.srcIp");
-		expEvent1.setSrcCountry("NL");
-		expEvent1.setSrcIntf("DvU");
-		expEvent1.setApp("-");
-		expEvent1.setMsg("Nothing happened");
 		
 		//set second expected event
-		expCal.set(2000, 4, 04, 06, 25, 2);
-		FwEvent expEvent2=new FwEvent(1, "fwTraffic", expCal, "event", "system");
-		expEvent1.setLevel("information");
-		expEvent1.setDstIp("555.666.77.8");
-		expEvent1.setDstCountry("this dst cnt");
-		expEvent1.setRecepient("me");
-		expEvent1.setSender("virg");
-		expEvent1.setService("smtp");
+		Calendar expCal2=Calendar.getInstance();
+		expCal2.set(2000, 3, 04, 06, 25, 2);
+		FwEvent expEvent2=new FwEvent(200, "fwTraffic", expCal2, "traffic", "system");
+		expEvent2.setLevel("information");
 		
-//		System.out.println(eventList.size());
+		SimpleDateFormat fmt=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		
-		assertEquals(expEvent1, eventList.get(0));
-		assertEquals(expEvent2, eventList.get(1));
+//		assertEquals(expEvent1.getKeyId(), eventList.get(0).getKeyId());
+		assertEquals(expEvent1.getSourceLog(), eventList.get(0).getSourceLog());
+		assertEquals(expEvent1.getType(), eventList.get(0).getType());
+		assertEquals(expEvent1.getSubtype(), eventList.get(0).getSubtype());
+		assertEquals(expEvent1.getLevel(), eventList.get(0).getLevel());
+		assertEquals(expEvent1.getAction(), eventList.get(0).getAction());
+		assertEquals(fmt.format(expEvent1.getCreated().getTime()), fmt.format(eventList.get(0).getCreated().getTime()));
+		assertEquals(expEvent2.getKeyId(), eventList.get(1).getKeyId());
+		assertEquals(expEvent2.getSourceLog(), eventList.get(1).getSourceLog());
+		assertEquals(expEvent2.getType(), eventList.get(1).getType());
+		assertEquals(expEvent2.getSubtype(), eventList.get(1).getSubtype());
+		assertEquals(expEvent2.getLevel(), eventList.get(1).getLevel());
+		assertEquals(expEvent2.getAction(), eventList.get(1).getAction());
+		assertEquals(fmt.format(expEvent2.getCreated().getTime()), fmt.format(eventList.get(1).getCreated().getTime()));
+	}
+	
+	@Test 
+	public void testFwInsert(){
+		//declare start-end dates of data retrieval (2016-09-09 17:46:13 t/m )
+		Calendar Scal=Calendar.getInstance();
+		Scal.set(2016, 8, 9, 17, 46, 13);
+		
+		List<FwEvent> eventList=dbc.getFwEventLog(false, Scal, Scal);
+		
+		//test event for filterer. It is the only event that should pass the filterer.
+		FwEvent testEvent=new FwEvent(999, "fwEvents", Scal, "Event", "application", "error", "denial");
+		eventList.add(testEvent);
+		
+		Filter filt=new Filter(dbc);
+		
+		filt.filterFwEvents(eventList);
+		List<FwEvent> actList=dbc.getFwEventLog(true, Scal, Scal);
+		
+		assertEquals(1, actList.size());
+		assertEquals(testEvent.getKeyId(), actList.get(0).getKeyId());
+		assertEquals(testEvent.getSourceLog(), actList.get(0).getSourceLog());
+		assertEquals(testEvent.getType(), actList.get(0).getType());
+		assertEquals(testEvent.getSubtype(), actList.get(0).getSubtype());
+		assertEquals(testEvent.getCreated().get(0), actList.get(0).getCreated().get(0));
+		assertEquals(testEvent.getCreated().get(1), actList.get(0).getCreated().get(1));
+		assertEquals(testEvent.getCreated().get(2), actList.get(0).getCreated().get(2));
+		assertEquals(testEvent.getCreated().get(3), actList.get(0).getCreated().get(3));
+		assertEquals(testEvent.getCreated().get(4), actList.get(0).getCreated().get(4));
+		assertEquals(testEvent.getCreated().get(5), actList.get(0).getCreated().get(5));
 	}
 	
 	@Test
@@ -137,7 +169,7 @@ public class DbTests {
 		assertEquals("Insert ms event", true, dbc.setMsFiltered(event));
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testSelectFwFiltered(){
 		try{
 			dbc=new DbConnector();
@@ -170,36 +202,24 @@ public class DbTests {
 	
 	@Test
 	public void testMsFilter() throws SQLException{
-		List<MsEvent> eventList=new ArrayList<MsEvent>();
+		List<MsEvent> actList=new ArrayList<MsEvent>();
 		List<MsEvent> expList=new ArrayList<>();
-		Calendar cal=Calendar.getInstance();
-		
+		Calendar Scal=Calendar.getInstance();
+		Calendar Ecal=Calendar.getInstance();
 		//mock random events
-		long mils=1480588830329L;
-		cal.set(2000, 1, 1, 14, 55, 0);
-		cal.setTimeInMillis(mils);
-		eventList.add(new MsEvent(0, "security", cal, 4625, "keywords"));//should be saved
-		eventList.add(new MsEvent(1, "security", cal, 5225, "keywords"));//should not be shaved
-		expList.add(new MsEvent(0, "security", cal, 4625, "keywords"));
-		cal.set(2016, 11, 1, 11, 40, 30);
-		eventList.add(new MsEvent(2, "security", cal, 4776, "keywords"));//should be shaved
-		eventList.add(new MsEvent(3, "security", cal, 7788, "keywords"));//should not be shaved
-		expList.add(new MsEvent(2, "security", cal, 4776, "keywords"));
+		Scal.set(2000, 1, 1, 14, 55, 0);
+		actList.add(new MsEvent(998, "security", Scal, 4625, "keywords"));//should be saved
+		actList.add(new MsEvent(997, "security", Scal, 5225, "keywords"));//should not be shaved
+		expList.add(new MsEvent(998, "security", Scal, 4625, "keywords"));
+		Ecal.set(2016, 11, 1, 11, 40, 30);
+		actList.add(new MsEvent(996, "security", Ecal, 4776, "keywords"));//should be shaved
+		actList.add(new MsEvent(995, "security", Ecal, 7788, "keywords"));//should not be shaved
+		expList.add(new MsEvent(996, "security", Ecal, 4776, "keywords"));
 		
 		Filter f=new Filter(dbc);
-		f.filterMsEvents(eventList);
-		
-		String sql="select * from filtered_ms";
-		ResultSet rs=dbc.customQuery(sql);
-		List<MsEvent> actList =new ArrayList<>();
-		
-		while(rs.next()){
-			//put events in list
-			java.sql.Date date=rs.getDate("created");
-			Helper hlp=new Helper();
-			actList.add(new MsEvent(rs.getInt("rowid"), rs.getString("sourceLog"), hlp.dateToCal(date), rs.getInt("eventid"), 
-					rs.getString("keywords")));
-		}
+		f.filterMsEvents(actList);
+		actList.clear();
+		actList =dbc.getSecurityLog(true, Scal, Ecal);
 		
 		assertEquals(expList.get(0), actList.get(0));
 		assertEquals(expList.get(1), actList.get(1));

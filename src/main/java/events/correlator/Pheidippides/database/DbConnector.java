@@ -3,6 +3,7 @@ package events.correlator.Pheidippides.database;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.sql.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -24,10 +25,10 @@ public final class DbConnector {
 	final static String queryFfwEvents = "SELECT * FROM filtered_fw WHERE sourceLog = 'fwEvents' AND ";
 	final static String querFfwTraffic = "SELECT * FROM filtered_fw WHERE sourceLog = 'fwTraffic' AND ";
 
-	final static String querySecurity = "SELECT * FROM Security_table WHERE ";
-	final static String queryMssql = "SELECT * FROM Mssql_table WHERE ";
-	final static String queryFwEvents = "SELECT * FROM firewall_event_log WHERE ";
-	final static String queryFwTraffic = "SELECT * FROM firewall_traffic_log WHERE ";
+	final static String querySecurity = "SELECT rowid, * FROM Security_table WHERE ";
+	final static String queryMssql = "SELECT rowid, * FROM Mssql_table WHERE ";
+	final static String queryFwEvents = "SELECT rowid, * FROM firewall_event_log WHERE ";
+	final static String queryFwTraffic = "SELECT rowid, * FROM firewall_traffic_log WHERE ";
 	
 	final static SimpleDateFormat dateFrmt =new SimpleDateFormat("yyyy-MM-dd");
 	final static SimpleDateFormat timeFrmt= new SimpleDateFormat("HH:mm:ss");
@@ -56,8 +57,10 @@ public final class DbConnector {
 	public ResultSet customQuery(String sql){
 		Statement stm=null;
 		try{
+			con.setAutoCommit(false);
 			stm=con.createStatement();
 			ResultSet results=stm.executeQuery(sql);
+			con.commit();
 			return results;
 		}
 		catch (SQLException e) {
@@ -76,7 +79,7 @@ public final class DbConnector {
 			String sql;
 			
 			if (type.equalsIgnoreCase("traffic")) {
-				sql = "SELECT * FROM filtered_fw WHERE type='traffic' AND created BETWEEN " + datesToSting(start, end);
+				sql = "SELECT * FROM filtered_fw WHERE lower(type)='traffic' AND created BETWEEN " + datesToSting(start, end);
 			} else {
 				sql = "SELECT * FROM filtered_fw WHERE lower(subtype)=lower('" + type + "') AND created BETWEEN " + 
 			datesToSting(start, end);
@@ -85,7 +88,6 @@ public final class DbConnector {
 			raw_log=stm.executeQuery(sql);
 			while (raw_log.next()) {
 				Calendar cal=Calendar.getInstance();
-				System.out.println(raw_log.getString("created"));
 				cal.setTime(raw_log.getDate("created"));
 				
 				FwEvent fw_event = new FwEvent(raw_log.getInt("RowId"), raw_log.getString("sourceLog"),
@@ -148,14 +150,13 @@ public final class DbConnector {
 			con.setAutoCommit(false);
 			String sql = "INSERT INTO filtered_ms VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 			PreparedStatement prstm = con.prepareStatement(sql);
-			
-			Helper hlp=new Helper();
+			SimpleDateFormat frmt=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			prstm.setInt(1, event.getKeyId());
 			prstm.setString(2, event.getSourceLog());	
 			prstm.setInt(3, event.getEventId());
 			prstm.setString(4, event.getKeywords());
-			prstm.setDate(5, hlp.calToDate(event.getCreated()));
+			prstm.setString(5, frmt.format(event.getCreated().getTime()));
 			prstm.setString(6, event.getSubjectLogonId());
 			prstm.setString(7, event.getHandleId());
 			prstm.setString(8, event.getLogonId());
@@ -182,12 +183,15 @@ public final class DbConnector {
 	public boolean setFwFiltered(FwEvent event) {
 		try {
 			con.setAutoCommit(false);
-			String sql = "INSERT INTO filtered_fw VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			
+			SimpleDateFormat frmt=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			
+			String sql = "INSERT INTO filtered_fw VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 			PreparedStatement prstm = con.prepareStatement(sql);
 			
 			prstm.setInt(1, event.getKeyId());
 			prstm.setString(2, event.getSourceLog());
-			prstm.setDate(3, new java.sql.Date(event.getCreated().getTimeInMillis()));
+			prstm.setString(3, frmt.format(event.getCreated().getTime()));
 			prstm.setString(4, event.getType());
 			prstm.setString(5, event.getSubtype());
 			prstm.setString(6, event.getLevel());
@@ -203,6 +207,7 @@ public final class DbConnector {
 			prstm.setString(16, event.getRecepient());
 			prstm.setString(17, event.getSender());
 			prstm.setString(18, event.getService());
+			prstm.setString(19, event.getRef());
 			prstm.executeUpdate();
 			con.commit();
 			return true;
@@ -213,7 +218,6 @@ public final class DbConnector {
 			System.out.println(e.getMessage());
 			return false;
 		}
-
 	}
 
 	public List<MsEvent> getSecurityLog(boolean filtered, Calendar startDate, Calendar endDate) {
@@ -284,19 +288,21 @@ public final class DbConnector {
 			if (filtered) {
 				raw_log = stm.executeQuery(queryFfwEvents + " created BETWEEN " + datesToSting(startDate, endDate));
 			} else if (!filtered) {
-				raw_log = stm.executeQuery(queryFfwEvents + " created BETWEEN " + datesToSting(startDate, endDate));
+				raw_log = stm.executeQuery(queryFwEvents + " created BETWEEN " + datesToSting(startDate, endDate));
 			}
 			
 			while (raw_log.next()) {
 				Calendar cal=Calendar.getInstance();
 				cal.setTime(raw_log.getDate("created"));
-				FwEvent fw_event = new FwEvent(raw_log.getInt("keyId"), raw_log.getString("sourceLog"),
+				FwEvent fw_event = new FwEvent(raw_log.getInt("ROWID"), raw_log.getString("sourceLog"),
 						cal, raw_log.getString("type"), raw_log.getString("subtype"),
-						raw_log.getString("level"), raw_log.getString("action"), raw_log.getString("dstip"),
-						raw_log.getString("dstcountry"), raw_log.getString("dstintf"), raw_log.getString("srcip"),
-						raw_log.getString("srccountry"), raw_log.getString("srcintf"), raw_log.getString("app"),
-						raw_log.getString("msg"), raw_log.getString("recepient"), raw_log.getString("sender"),
-						raw_log.getString("service"), raw_log.getString("ref"));
+						raw_log.getString("level"), raw_log.getString("action"));
+						fw_event.setMsg(raw_log.getString("msg"));
+//						raw_log.getString("dstip"),
+//						raw_log.getString("dstcountry"), raw_log.getString("dstintf"), raw_log.getString("srcip"),
+//						raw_log.getString("srccountry"), raw_log.getString("srcintf"), raw_log.getString("app"),
+//						raw_log.getString("msg"), raw_log.getString("recepient"), raw_log.getString("sender"),
+//						raw_log.getString("service"), raw_log.getString("ref"));
 				eventList.add(fw_event);
 			}
 			return eventList;

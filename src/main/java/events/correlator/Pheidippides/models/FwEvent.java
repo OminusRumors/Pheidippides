@@ -12,6 +12,15 @@ public class FwEvent extends Event{
 	private String dstCountry;
 	private String dstIntf;
 	private String srcIp;
+	private String srcCountry;
+	private String srcIntf;
+	private String app;
+	private String msg;
+	private String recepient;
+	private String sender;
+	private String service;
+	private String ref;
+	
 	public FwEvent(int keyId, String sourceLog, Calendar created, String type, String subtype, String level,
 			String action, String dstIp, String dstCountry, String dstIntf, String srcIp, String srcCountry,
 			String srcIntf, String app, String msg, String recepient, String sender, String service, String ref) {
@@ -34,15 +43,6 @@ public class FwEvent extends Event{
 		this.ref = ref;
 	}
 
-	private String srcCountry;
-	private String srcIntf;
-	private String app;
-	private String msg;
-	private String recepient;
-	private String sender;
-	private String service;
-	private String ref;
-	
 	public FwEvent(int keyId, String sourceLog, Calendar created, String type, String subtype) {
 		super(keyId, sourceLog, created);
 		this.type = type;

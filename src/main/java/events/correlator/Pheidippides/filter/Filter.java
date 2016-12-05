@@ -97,20 +97,20 @@ public class Filter {
 	
 	public void filterFwEvents(List<FwEvent> eventList){
 		for (FwEvent e : eventList){
-			if (e.getType()=="traffic" && e.getAction().matches("den.*")){
+			if (e.getType()=="traffic" && e.getAction().matches("^den.*")){
 				dbc.setFwFiltered(e);
 			}
-			if (e.getSubtype().matches("app.*") && !e.getAction().matches("pas.*")){
+			if (e.getSubtype().matches("^app.*") && !e.getAction().matches("^pas.*")){
 				dbc.setFwFiltered(e);
 			}
 			if (e.getSubtype().matches("dlp")){
 				dbc.setFwFiltered(e);
 			}
-			if (e.getSubtype().matches("anom.*")){
+			if (e.getSubtype().matches("^anom.*")){
 				dbc.setFwFiltered(e);
 			}
-			if (e.getSubtype().matches("web.*") && (!e.getAction().matches("allo.*")) || !e.getAction().matches("exem.*") ||
-					!e.getAction().matches("pas.*")){
+			if (e.getSubtype().matches("^web.*") && ((!e.getAction().matches("^allo.*")) || !e.getAction().matches("^exem.*") ||
+					!e.getAction().matches("pas.*"))){
 				dbc.setFwFiltered(e);
 			}
 			if (e.getSubtype().matches("system") && e.getAction().matches("interface-stat-change")){
