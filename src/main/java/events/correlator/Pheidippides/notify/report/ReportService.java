@@ -28,7 +28,6 @@ public class ReportService {
 	public Response topDestinations(@QueryParam("top") int top, @QueryParam("start") String start,
 			@QueryParam("end") String end){
 		try{
-//			Map<String, Integer> results=report.topDestinations(top, start, end);
 			GenericEntity<Map<String, Integer>> results=new GenericEntity<Map<String,Integer>>(report.topDestinations(top, start, end)) {};
 			return Response.ok(results).build();
 		}
@@ -37,4 +36,16 @@ public class ReportService {
 		}
 	}
 
+	@GET
+	@Path("/dropdestinations")
+	public Response dropDestinations(@QueryParam("top") int top, @QueryParam("start") String start,
+			@QueryParam("end") String end){
+		try{
+			GenericEntity<Map<String, Integer>> results=new GenericEntity<Map<String,Integer>>(report.droppedDestinations(top, start, end)) {};
+			return Response.ok(results).build();
+		}
+		catch(Exception e){
+			return Response.status(500).entity(e.getLocalizedMessage()).build();
+		}
+	}
 }
