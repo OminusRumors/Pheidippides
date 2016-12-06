@@ -21,6 +21,10 @@ public class FwEvent extends Event{
 	private String service;
 	private String ref;
 	
+	public FwEvent(){
+		
+	}
+	
 	public FwEvent(int keyId, String sourceLog, Calendar created, String type, String subtype, String level,
 			String action, String dstIp, String dstCountry, String dstIntf, String srcIp, String srcCountry,
 			String srcIntf, String app, String msg, String recepient, String sender, String service, String ref) {

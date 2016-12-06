@@ -22,6 +22,10 @@ public abstract class Event {
 		this.created = created;
 		this.app = app;
 	}
+	
+	public Event(){
+		
+	}
 
 	public int getKeyId() {
 		return keyId;

@@ -56,11 +56,12 @@ public final class DbConnector {
 	
 	public ResultSet customQuery(String sql){
 		Statement stm=null;
+		ResultSet results = null;
 		try{
 			con.setAutoCommit(false);
 			stm=con.createStatement();
-			ResultSet results=stm.executeQuery(sql);
-			con.commit();
+			results=stm.executeQuery(sql);
+			//con.commit();
 			return results;
 		}
 		catch (SQLException e) {
@@ -68,13 +69,23 @@ public final class DbConnector {
 			System.out.println(e.getMessage());
 			return null;
 		}
+//		finally{
+//			try{
+//				results.close();
+//				stm.close();
+//			}
+//			catch(Exception e){
+//				System.out.println(e.getLocalizedMessage());
+//				System.out.println("DbConnector.customQuery failed to close statement&resultset.");
+//			}
+//		}
 	}
 
 	public List<FwEvent> getFwByType(String type, Calendar start, Calendar end) {
-		Statement stm;
+		Statement stm = null;
+		ResultSet raw_log = null;
 		try {
 			stm = con.createStatement();
-			ResultSet raw_log;
 			List<FwEvent> eventList = new ArrayList<FwEvent>();
 			String sql;
 			
@@ -106,13 +117,23 @@ public final class DbConnector {
 			System.out.println("DbConnector.getFwByType SQLException");
 			return null;
 		}
+//		finally{
+//			try{
+//				raw_log.close();
+//				stm.close();
+//			}
+//			catch(Exception e){
+//				System.out.println(e.getLocalizedMessage());
+//				System.out.println("DbConnector.getFwByType failed to close statement&resultset.");
+//			}
+//		}
 	}
 
 	public List<MsEvent> getMsByEventId(int eventId, boolean filtered, Calendar start, Calendar end) {
-		Statement stm;
+		Statement stm=null;
+		ResultSet raw = null;
 		try {
 			stm = con.createStatement();
-			ResultSet raw = null;
 			List<MsEvent> eventList = new ArrayList<MsEvent>();
 			String sql;
 
@@ -143,13 +164,24 @@ public final class DbConnector {
 			System.out.println(e.getMessage());
 			return null;
 		}
+//		finally{
+//			try{
+//				raw.close();
+//				stm.close();
+//			}
+//			catch(Exception e){
+//				System.out.println(e.getLocalizedMessage());
+//				System.out.println("DbConnector.getMsByEventId failed to close statement&resultset.");
+//			}
+//		}
 	}
 
 	public boolean setMsFiltered(MsEvent event) {
+		PreparedStatement prstm=null;
 		try {
 			con.setAutoCommit(false);
 			String sql = "INSERT INTO filtered_ms VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-			PreparedStatement prstm = con.prepareStatement(sql);
+			prstm = con.prepareStatement(sql);
 			SimpleDateFormat frmt=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			prstm.setInt(1, event.getKeyId());
@@ -177,17 +209,26 @@ public final class DbConnector {
 			System.out.println(e.getLocalizedMessage());
 			return false;
 		}
-
+//		finally{
+//			try{
+//				prstm.close();
+//			}
+//			catch(Exception e){
+//				System.out.println(e.getLocalizedMessage());
+//				System.out.println("DbConnector.setMsFiltered failed to close statement.");
+//			}
+//		}
 	}
 
 	public boolean setFwFiltered(FwEvent event) {
+		PreparedStatement prstm=null;
 		try {
 			con.setAutoCommit(false);
 			
 			SimpleDateFormat frmt=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			String sql = "INSERT INTO filtered_fw VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-			PreparedStatement prstm = con.prepareStatement(sql);
+			prstm = con.prepareStatement(sql);
 			
 			prstm.setInt(1, event.getKeyId());
 			prstm.setString(2, event.getSourceLog());
@@ -218,12 +259,23 @@ public final class DbConnector {
 			System.out.println(e.getMessage());
 			return false;
 		}
+		finally{
+			try{
+				prstm.close();
+			}
+			catch(Exception e){
+				System.out.println(e.getLocalizedMessage());
+				System.out.println("DbConnector.setFwFiltered failed to close statement.");
+			}
+		}
 	}
 
 	public List<MsEvent> getSecurityLog(boolean filtered, Calendar startDate, Calendar endDate) {
+		Statement stm=null;
+		ResultSet raw_log=null;
 		try {
-			Statement stm = con.createStatement();
-			ResultSet raw_log = null;
+			stm = con.createStatement();
+			raw_log = null;
 			List<MsEvent> eventList = new ArrayList<MsEvent>();
 			
 			if (filtered) {
@@ -234,7 +286,7 @@ public final class DbConnector {
 			while (raw_log.next()) {
 				Calendar cal=Calendar.getInstance();
 				cal.setTime(raw_log.getDate("created"));
-				MsEvent ms_event = new MsEvent(raw_log.getInt("keyId"), raw_log.getString("sourceLog"),
+				MsEvent ms_event = new MsEvent(raw_log.getInt("rowId"), raw_log.getString("sourceLog"),
 						cal, raw_log.getInt("eventId"), raw_log.getString("keywords"),
 						raw_log.getString("subjectLogonId"), raw_log.getString("handleId"),
 						raw_log.getString("logonId"), raw_log.getString("status"), raw_log.getString("substatus"),
@@ -244,15 +296,27 @@ public final class DbConnector {
 			}
 			return eventList;
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			System.out.println(e.getLocalizedMessage());
+		}
+		finally{
+			try{
+				raw_log.close();
+				stm.close();
+			}
+			catch(Exception e){
+				System.out.println(e.getLocalizedMessage());
+				System.out.println("DbConnector.getSecurityLog failed to close statement&resultset.");
+			}
 		}
 		return null;
 	}
 
 	public List<MsEvent> getMssqlLog(boolean filtered, Calendar startDate, Calendar endDate) {
+		Statement stm=null;
+		ResultSet raw_log=null;
 		try {
-			Statement stm = con.createStatement();
-			ResultSet raw_log = null;
+			stm = con.createStatement();
+			raw_log = null;
 			List<MsEvent> eventList = new ArrayList<MsEvent>();
 
 			if (filtered) {
@@ -264,7 +328,7 @@ public final class DbConnector {
 			while (raw_log.next()) {
 				Calendar cal=Calendar.getInstance();
 				cal.setTime(raw_log.getDate("created"));
-				MsEvent ms_event = new MsEvent(raw_log.getInt("keyId"), raw_log.getString("sourceLog"),
+				MsEvent ms_event = new MsEvent(raw_log.getInt("rowid"), raw_log.getString("sourceLog"),
 						cal, raw_log.getInt("eventId"), raw_log.getString("keywords"),
 						raw_log.getString("subjectLogonId"), raw_log.getString("handleId"),
 						raw_log.getString("logonId"), raw_log.getString("status"), raw_log.getString("substatus"),
@@ -276,13 +340,25 @@ public final class DbConnector {
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
+		finally{
+			try{
+				raw_log.close();
+				stm.close();
+			}
+			catch(Exception e){
+				System.out.println(e.getLocalizedMessage());
+				System.out.println("DbConnector.getMsqlLog failed to close statement&resultset.");
+			}
+		}
 		return null;
 	}
 
 	public List<FwEvent> getFwEventLog(boolean filtered, Calendar startDate, Calendar endDate) {
+		Statement stm=null;
+		ResultSet raw_log=null;
 		try {
-			Statement stm = con.createStatement();
-			ResultSet raw_log = null;
+			stm = con.createStatement();
+			raw_log = null;
 			List<FwEvent> eventList = new ArrayList<FwEvent>();
 
 			if (filtered) {
@@ -309,13 +385,25 @@ public final class DbConnector {
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
+		finally{
+			try{
+				raw_log.close();
+				stm.close();
+			}
+			catch(Exception e){
+				System.out.println(e.getLocalizedMessage());
+				System.out.println("DbConnector.getFwEventLog failed to close statement&resultset.");
+			}
+		}
 		return null;
 	}
 
 	public List<FwEvent> getFwTrafficLog(boolean filtered, Calendar startDate, Calendar endDate) {
+		Statement stm=null;
+		ResultSet raw_log=null;
 		try {
-			Statement stm = con.createStatement();
-			ResultSet raw_log = null;
+			stm = con.createStatement();
+			raw_log = null;
 			List<FwEvent> eventList = new ArrayList<FwEvent>();
 
 			if (filtered) {
@@ -327,7 +415,7 @@ public final class DbConnector {
 			while (raw_log.next()) {
 				Calendar cal=Calendar.getInstance();
 				cal.setTime(raw_log.getDate("created"));
-				FwEvent fw_event = new FwEvent(raw_log.getInt("keyId"), raw_log.getString("sourceLog"),
+				FwEvent fw_event = new FwEvent(raw_log.getInt("rowid"), raw_log.getString("sourceLog"),
 						cal, raw_log.getString("type"), raw_log.getString("subtype"),
 						raw_log.getString("level"), raw_log.getString("action"), raw_log.getString("dstip"),
 						raw_log.getString("dstcountry"), raw_log.getString("dstintf"), raw_log.getString("srcip"),
@@ -350,6 +438,16 @@ public final class DbConnector {
 			}
 			System.out.println("getFwTraffic failed.");
 			System.out.println(e.getLocalizedMessage());
+		}
+		finally{
+			try{
+				raw_log.close();
+				stm.close();
+			}
+			catch(Exception e){
+				System.out.println(e.getLocalizedMessage());
+				System.out.println("DbConnector.getFwTrafficLog failed to close statement&resultset.");
+			}
 		}
 		return null;
 	}

@@ -16,6 +16,10 @@ public class MsEvent extends Event{
 	private String targetDomainName;
 	private String ipAddress;
 	
+	public MsEvent(){
+		
+	}
+	
 	public MsEvent(int keyId, String sourceLog, Calendar created, int eventId, String keywords, String subjectLogonId,
 			String handleId, String logonId, String status, String substatus, int logonType, String targetUsername,
 			String targetDomainName, String ipAddress) {

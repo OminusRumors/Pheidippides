@@ -3,7 +3,6 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.After;
@@ -59,13 +58,6 @@ public class DbTests {
 	
 	@Test
 	public void testCustStm() throws SQLException{
-		try{
-			dbc=new DbConnector();
-		}
-		catch(ClassNotFoundException e){
-			System.out.println("Test's connection to db failed.");
-			System.out.println(e.toString());
-		}
 		
 		ResultSet eventList=dbc.customQuery("select * from security_table where eventid=4768 and TimeCreated between '2016-09-01' and '2016-09-30' order by TimeCreated;");
 		
@@ -103,7 +95,7 @@ public class DbTests {
 		
 		SimpleDateFormat fmt=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		
-//		assertEquals(expEvent1.getKeyId(), eventList.get(0).getKeyId());
+		assertEquals(expEvent1.getKeyId(), eventList.get(0).getKeyId());
 		assertEquals(expEvent1.getSourceLog(), eventList.get(0).getSourceLog());
 		assertEquals(expEvent1.getType(), eventList.get(0).getType());
 		assertEquals(expEvent1.getSubtype(), eventList.get(0).getSubtype());
@@ -151,35 +143,20 @@ public class DbTests {
 	
 	@Test
 	public void testMsInsert(){
-		try{
-			dbc=new DbConnector();
-		}
-		catch(Exception e){
-			System.out.println(e.getLocalizedMessage());
-		}
 		Calendar cal=Calendar.getInstance();
 		cal.set(Calendar.YEAR, 2000);
 		cal.set(Calendar.MONTH, 0);
 		cal.set(Calendar.DATE, 30);
 		cal.set(Calendar.HOUR, 14);
 		cal.set(Calendar.MINUTE, 50);
-		MsEvent event=new MsEvent(0, "security", cal, 0000, "mockkeywords");
-		MsEvent e=new MsEvent(1, "mssql", cal, 1234, "testKeywords");
-		assertEquals(true, dbc.setMsFiltered(e));
-		assertEquals("Insert ms event", true, dbc.setMsFiltered(event));
+		MsEvent event=new MsEvent(888, "security", cal, 0000, "mockkeywords");
+		MsEvent e=new MsEvent(889, "mssql", cal, 1234, "testKeywords");
+		assertEquals(false, dbc.setMsFiltered(e));
+		assertEquals("Insert ms event", false, dbc.setMsFiltered(event));
 	}
 	
-	@Test @Ignore
+	@Test 
 	public void testSelectFwFiltered(){
-		try{
-			dbc=new DbConnector();
-		}
-		catch(Exception e){
-			e.getStackTrace();
-			System.out.println("Select filtered firewall events method failed.");
-			System.out.println(e.getLocalizedMessage());
-		}
-		
 		List<FwEvent> eventList=dbc.getFwTrafficLog(true, start, end);
 		
 		//actual events
@@ -197,7 +174,6 @@ public class DbTests {
 		
 		assertEquals(eE1, e1);
 		assertEquals(eE2, e2);
-		// TODO: fix date/calendar conversion in DbConnector
 	}
 	
 	@Test
