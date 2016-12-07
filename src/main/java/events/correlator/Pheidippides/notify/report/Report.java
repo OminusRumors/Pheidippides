@@ -73,15 +73,16 @@ public class Report {
 		if (top <= 0) {
 			top = 10;
 		}
-		String sql = "SELECT dstip, count(dstip) FROM firewall_traffic_log WHERE type='traffic' AND action='deny' AND created BETWEEN "
-				+ start + " AND " + end + " AND " + " GROUP BY dstip ORDER BY count(dstip) DESC LIMIT " 
+		String sql = "SELECT dstip, count(dstip) FROM firewall_traffic_log WHERE type='traffic' AND action='deny' AND created BETWEEN '"
+				+ start + "' AND '" + end + "' GROUP BY dstip ORDER BY count(dstip) DESC LIMIT " 
 				+ Integer.toString(top) + ";";
+		System.out.println(sql);
 		ResultSet result = dbc.customQuery(sql);
 
 		try {
 			while (result.next()) {
-				if (result.getString(0) != "255.255.255.255") {
-					resultMap.put(result.getString(0), result.getInt(1));
+				if (result.getString(1) != "255.255.255.255") {
+					resultMap.put(result.getString(1), result.getInt(2));
 				}
 			}
 			return resultMap;
