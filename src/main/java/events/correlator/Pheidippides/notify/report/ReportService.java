@@ -11,8 +11,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import events.correlator.Pheidippides.models.AttackReportModel;
+import events.correlator.Pheidippides.models.GenericReportModel;
 
 
 @Path("/reports")
@@ -56,11 +57,18 @@ public class ReportService {
 	@Path("/attacks")
 	public Response attacksPerAddress(@QueryParam("start") String start, @QueryParam("end") String end){
 		try{
-			GenericEntity<List<AttackReportModel>> results=new GenericEntity<List<AttackReportModel>>(report.attacksPerAddress(start, end)) {};
+			GenericEntity<List<GenericReportModel>> results=new GenericEntity<List<GenericReportModel>>(report.attacksPerAddress(start, end)) {};
 			return Response.ok(results).build();
 		}
 		catch(Exception e){
 			return Response.status(500).entity(e.getLocalizedMessage()).build();
 		}
+	}
+	
+	@GET
+	@Path("/unknowndestinations")
+	public Response unknownDestinations(){
+		report.unknownDestinations("", "");
+		return Response.status(Status.FOUND).build();
 	}
 }

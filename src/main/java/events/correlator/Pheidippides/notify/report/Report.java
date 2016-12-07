@@ -1,18 +1,27 @@
 package events.correlator.Pheidippides.notify.report;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.Collator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import events.correlator.Pheidippides.database.DbConnector;
-import events.correlator.Pheidippides.models.AttackReportModel;
+import events.correlator.Pheidippides.models.GenericReportModel;
 import events.correlator.Pheidippides.models.FwEvent;
 
 public class Report {
@@ -78,8 +87,8 @@ public class Report {
 			top = 10;
 		}
 		
-		String sql = "SELECT dstip, count(dstip) FROM firewall_traffic_log WHERE type='traffic' AND action='deny' AND created BETWEEN '"
-				+ start + "' AND '" + end + "' GROUP BY dstip ORDER BY count(dstip) DESC LIMIT " 
+		String sql = "SELECT dstip, count(dstip) FROM firewall_traffic_log WHERE type='traffic' AND (action='deny' OR action LIKE 'bloc%' )"
+				+ " AND created BETWEEN '" + start + "' AND '" + end + "' GROUP BY dstip ORDER BY count(dstip) DESC LIMIT " 
 				+ Integer.toString(top) + ";";
 		ResultSet result = dbc.customQuery(sql);
 
@@ -98,17 +107,17 @@ public class Report {
 		}
 	}
 	
-	public List<AttackReportModel> attacksPerAddress(String start, String end){
+	public List<GenericReportModel> attacksPerAddress(String start, String end){
 		String sql="SELECT dstip, count(dstip) as nrOfAttacks, ref, msg FROM firewall_traffic_log WHERE type='anomaly' AND created BETWEEN '"
 				+ start + "' AND '" + end + "' GROUP BY dstip;";
-		List<AttackReportModel> reportList=new LinkedList<>();
-		AttackReportModel report;
+		List<GenericReportModel> reportList=new LinkedList<>();
+		GenericReportModel report;
 		
 		try{
 			ResultSet result=dbc.customQuery(sql);
 			
 			while(result.next()){
-				report=new AttackReportModel();
+				report=new GenericReportModel();
 				report.setElement("dstip", result.getString("dstip"));
 				report.setElement("nrOfAttacks", result.getString("nrOfAttacks"));
 				report.setElement("msg", result.getString("msg"));
@@ -119,6 +128,53 @@ public class Report {
 		}
 		catch (Exception e){
 			System.out.println(e.getLocalizedMessage());
+			return null;
+		}
+	}
+	
+	
+	public GenericReportModel unknownDestinations(String start, String end){
+		String csvFile="C:/Users/George/Desktop/software tools/eclipse_workspace/Pheidippides/util/popular_destinations.csv";
+		String line="";
+		GenericReportModel grm=new GenericReportModel();
+		Collection<String> knownHosts=new TreeSet<String>(Collator.getInstance());
+		
+		try(BufferedReader br=new BufferedReader(new FileReader(csvFile))){
+			
+			//retrieve all the hosts from the file.
+			while ((line=br.readLine())!=null){
+				knownHosts.add(line);
+			}
+			
+			String sql="SELECT hostname, count(hostname) AS count FROM firewall_traffic_log WHERE hostname IS NOT NULL AND created BETWEEN '"
+					+ start + "' AND '" + end + "' GROUP BY hostname;";
+			ResultSet results=dbc.customQuery(sql);
+			
+			while (results.next()){
+				grm.setElement(results.getString(1), results.getString(2));
+			}
+			
+			for (String fileHost : knownHosts){
+				for (String host : grm.getReportData().keySet()){
+					if (host.contains(fileHost)){
+						grm.getReportData().remove(host);
+						break;
+					}
+				}
+			}
+			
+			return grm;
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 			return null;
 		}
 	}

@@ -3,11 +3,11 @@ package events.correlator.Pheidippides.models;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AttackReportModel {
+public class GenericReportModel {
 
 	private Map<String, String> reportData;
 	
-	public AttackReportModel(){
+	public GenericReportModel(){
 		this.reportData=new HashMap<String, String>();
 	}
 
