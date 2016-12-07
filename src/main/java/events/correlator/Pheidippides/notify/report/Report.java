@@ -139,6 +139,10 @@ public class Report {
 		GenericReportModel grm=new GenericReportModel();
 		Collection<String> knownHosts=new TreeSet<String>(Collator.getInstance());
 		
+		if (top<=0){
+			top=10;
+		}
+		
 		try(BufferedReader br=new BufferedReader(new FileReader(csvFile))){
 			
 			//retrieve all the hosts from the file.
