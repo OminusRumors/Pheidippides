@@ -7,9 +7,13 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import events.correlator.Pheidippides.database.DbConnector;
+import events.correlator.Pheidippides.models.AttackReportModel;
+import events.correlator.Pheidippides.models.FwEvent;
 
 public class Report {
 
@@ -73,10 +77,10 @@ public class Report {
 		if (top <= 0) {
 			top = 10;
 		}
+		
 		String sql = "SELECT dstip, count(dstip) FROM firewall_traffic_log WHERE type='traffic' AND action='deny' AND created BETWEEN '"
 				+ start + "' AND '" + end + "' GROUP BY dstip ORDER BY count(dstip) DESC LIMIT " 
 				+ Integer.toString(top) + ";";
-		System.out.println(sql);
 		ResultSet result = dbc.customQuery(sql);
 
 		try {
@@ -90,6 +94,31 @@ public class Report {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println(e.getMessage());
+			return null;
+		}
+	}
+	
+	public List<AttackReportModel> attacksPerAddress(String start, String end){
+		String sql="SELECT dstip, count(dstip) as nrOfAttacks, ref, msg FROM firewall_traffic_log WHERE type='anomaly' AND created BETWEEN '"
+				+ start + "' AND '" + end + "' GROUP BY dstip;";
+		List<AttackReportModel> reportList=new LinkedList<>();
+		AttackReportModel report;
+		
+		try{
+			ResultSet result=dbc.customQuery(sql);
+			
+			while(result.next()){
+				report=new AttackReportModel();
+				report.setElement("dstip", result.getString("dstip"));
+				report.setElement("nrOfAttacks", result.getString("nrOfAttacks"));
+				report.setElement("msg", result.getString("msg"));
+				report.setElement("ref", result.getString("ref"));
+				reportList.add(report);
+			}
+			return reportList;
+		}
+		catch (Exception e){
+			System.out.println(e.getLocalizedMessage());
 			return null;
 		}
 	}

@@ -1,5 +1,6 @@
 package events.correlator.Pheidippides.notify.report;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.Consumes;
@@ -10,6 +11,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import events.correlator.Pheidippides.models.AttackReportModel;
 
 
 @Path("/reports")
@@ -42,6 +45,18 @@ public class ReportService {
 			@QueryParam("end") String end){
 		try{
 			GenericEntity<Map<String, Integer>> results=new GenericEntity<Map<String,Integer>>(report.droppedDestinations(top, start, end)) {};
+			return Response.ok(results).build();
+		}
+		catch(Exception e){
+			return Response.status(500).entity(e.getLocalizedMessage()).build();
+		}
+	}
+	
+	@GET
+	@Path("/attacks")
+	public Response attacksPerAddress(@QueryParam("start") String start, @QueryParam("end") String end){
+		try{
+			GenericEntity<List<AttackReportModel>> results=new GenericEntity<List<AttackReportModel>>(report.attacksPerAddress(start, end)) {};
 			return Response.ok(results).build();
 		}
 		catch(Exception e){
