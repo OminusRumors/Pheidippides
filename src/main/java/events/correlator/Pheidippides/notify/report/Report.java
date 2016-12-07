@@ -133,7 +133,7 @@ public class Report {
 	}
 	
 	
-	public GenericReportModel unknownDestinations(String start, String end){
+	public GenericReportModel unknownDestinations(int top, String start, String end){
 		String csvFile="C:/Users/George/Desktop/software tools/eclipse_workspace/Pheidippides/util/popular_destinations.csv";
 		String line="";
 		GenericReportModel grm=new GenericReportModel();
@@ -147,7 +147,7 @@ public class Report {
 			}
 			
 			String sql="SELECT hostname, count(hostname) AS count FROM firewall_traffic_log WHERE hostname IS NOT NULL AND created BETWEEN '"
-					+ start + "' AND '" + end + "' GROUP BY hostname;";
+					+ start + "' AND '" + end + "' GROUP BY hostname LIMIT " + Integer.toString(top);
 			ResultSet results=dbc.customQuery(sql);
 			
 			while (results.next()){

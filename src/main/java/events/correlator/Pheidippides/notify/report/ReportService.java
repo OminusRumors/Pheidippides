@@ -67,9 +67,9 @@ public class ReportService {
 	
 	@GET
 	@Path("/unknowndestinations")
-	public Response unknownDestinations(@QueryParam("start") String start, @QueryParam("end") String end){
+	public Response unknownDestinations(@QueryParam("top") int top, @QueryParam("start") String start, @QueryParam("end") String end){
 		try{
-			GenericEntity<GenericReportModel> results=new GenericEntity<GenericReportModel>(report.unknownDestinations(start, end)) {};
+			GenericEntity<GenericReportModel> results=new GenericEntity<GenericReportModel>(report.unknownDestinations(top, start, end)) {};
 			return Response.ok(results).build();
 		}
 		catch (Exception e){
