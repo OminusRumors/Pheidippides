@@ -167,12 +167,9 @@ public class Report {
 			
 			List<String> temp=new ArrayList<>();
 			
-			System.out.println("Known hosts found: ");
 			for (String host : grm.getReportData().keySet()){
 				for (String fileHost : knownHosts){
 					if (host.toLowerCase().contains(fileHost.toLowerCase())){
-						System.out.println(host);
-//						grm.deleteElement(host);
 						temp.add(host);
 						break;
 					}
@@ -192,7 +189,8 @@ public class Report {
 			Iterator<Entry<String,String>> iterator = g.getReportData().entrySet().iterator();
 			int index=0;
 			while(iterator.hasNext() && index<top){
-				g1.setElement(iterator.next().getKey(), iterator.next().getValue());
+				Entry<String, String> e=iterator.next();
+				g1.setElement(e.getKey(), e.getValue());
 				index++;
 			}
 			
