@@ -187,10 +187,16 @@ public class Report {
 			
 			GenericReportModel g=new GenericReportModel();
 			g.setReportData(sortByValue(grm.getReportData()));
-			 
-			System.out.println(g.getReportData().entrySet());
+			GenericReportModel g1=new GenericReportModel();
 			
-			return g;
+			Iterator<Entry<String,String>> iterator = g.getReportData().entrySet().iterator();
+			int index=0;
+			while(iterator.hasNext() && index<top){
+				g1.setElement(iterator.next().getKey(), iterator.next().getValue());
+				index++;
+			}
+			
+			return g1;
 					
 		} catch (FileNotFoundException e) {
 			System.out.println(e.getLocalizedMessage());

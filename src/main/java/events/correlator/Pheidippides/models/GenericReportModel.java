@@ -1,6 +1,6 @@
 package events.correlator.Pheidippides.models;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GenericReportModel {
@@ -8,7 +8,7 @@ public class GenericReportModel {
 	private Map<String, String> reportData;
 	
 	public GenericReportModel(){
-		this.reportData=new HashMap<String, String>();
+		this.reportData=new LinkedHashMap<String, String>();
 	}
 
 	public Map<String, String> getReportData() {
