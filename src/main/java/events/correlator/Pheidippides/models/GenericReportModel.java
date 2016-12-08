@@ -26,4 +26,8 @@ public class GenericReportModel {
 	public String getElement(String key){
 		return this.reportData.get(key);
 	}
+	
+	public void deleteElement(String key){
+		this.reportData.remove(key);
+	}
 }

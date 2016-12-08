@@ -12,13 +12,20 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import events.correlator.Pheidippides.database.DbConnector;
 import events.correlator.Pheidippides.models.GenericReportModel;
@@ -151,36 +158,74 @@ public class Report {
 			}
 			
 			String sql="SELECT hostname, count(hostname) AS count FROM firewall_traffic_log WHERE hostname IS NOT NULL AND created BETWEEN '"
-					+ start + "' AND '" + end + "' GROUP BY hostname LIMIT " + Integer.toString(top);
+					+ start + "' AND '" + end + "' GROUP BY hostname";// LIMIT " + Integer.toString(top);
 			ResultSet results=dbc.customQuery(sql);
 			
 			while (results.next()){
 				grm.setElement(results.getString(1), results.getString(2));
 			}
 			
-			for (String fileHost : knownHosts){
-				for (String host : grm.getReportData().keySet()){
-					if (host.contains(fileHost)){
-						grm.getReportData().remove(host);
+			List<String> temp=new ArrayList<>();
+			
+			System.out.println("Known hosts found: ");
+			for (String host : grm.getReportData().keySet()){
+				for (String fileHost : knownHosts){
+					if (host.toLowerCase().contains(fileHost.toLowerCase())){
+						System.out.println(host);
+//						grm.deleteElement(host);
+						temp.add(host);
 						break;
 					}
 				}
 			}
 			
-			return grm;
+			for (String s : temp){
+				if (grm.getReportData().containsKey(s)){
+					grm.deleteElement(s);
+				}
+			}
+			
+			GenericReportModel g=new GenericReportModel();
+			g.setReportData(sortByValue(grm.getReportData()));
+			 
+			System.out.println(g.getReportData().entrySet());
+			
+			return g;
+					
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
+			System.out.println(e.getLocalizedMessage());
+			GenericReportModel g=new GenericReportModel();
+			g.setElement("File not found", e.getLocalizedMessage());
+			return g;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
+			System.out.println(e.getLocalizedMessage());
+			GenericReportModel g=new GenericReportModel();
+			g.setElement("File not found", e.getLocalizedMessage());
+			return g;
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
+			System.out.println(e.getLocalizedMessage());
+			GenericReportModel g=new GenericReportModel();
+			g.setElement("File not found", e.getLocalizedMessage());
+			return g;
 		}
 	}
 
+	private static Map<String, String> sortByValue(Map<String, String> map) {
+	    Set<Entry<String, String>> mapEntries=map.entrySet();
+	    List<Entry<String, String>> aList=new LinkedList<Entry<String, String>>(mapEntries);
+	    
+	    Collections.sort(aList, new Comparator<Entry<String, String>>() {
+	    	@Override
+	    	public int compare(Entry<String, String> e1, Entry<String, String> e2){
+	    		return Integer.valueOf(e2.getValue()).compareTo(Integer.valueOf(e1.getValue()));
+	    	}
+		});
+	    Map<String,String> aMap2 = new LinkedHashMap<String, String>();
+        for(Entry<String,String> entry: aList) {
+            aMap2.put(entry.getKey(), entry.getValue());
+        }
+        
+        return aMap2;
+	}
+	
 }
