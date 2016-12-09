@@ -37,18 +37,15 @@ public class MsRuler {
 
 		// transforms the DATE of the event to CALENDAR instance
 		Calendar curDate = Calendar.getInstance();
-		curDate.setTime(current);
 		retArray[1] = curDate;
 
 		// gets the time of -2 seconds from the current time
 		Calendar minDate = Calendar.getInstance();
-		minDate.setTime(current);
 		minDate.add(Calendar.SECOND, -window);
 		retArray[0] = minDate;
 
 		// gets the time of +2 seconds from the current time
 		Calendar maxDate = Calendar.getInstance();
-		maxDate.setTime(current);
 		maxDate.add(Calendar.SECOND, +window);
 		retArray[2] = maxDate;
 
@@ -79,12 +76,12 @@ public class MsRuler {
 				}
 			}
 			for (MsEvent e:eventUserList){
-				Calendar[] cal=dateToCalRange(e.getCreated(), 2);
+				Calendar[] cal=dateToCalRange(e.getCreated(), 3);
 				List<String> ipList=new ArrayList<String>();
 				
 				//loop for getting all the events of the specific user in a defined time range and save them to "finalList"
 				for (MsEvent ev:eventUserList){
-					if (ev.getCreated().compareTo(cal[0].getTime())>0 && ev.getCreated().compareTo(cal[2].getTime())<0){
+					if (ev.getCreated().compareTo(cal[0])>0 && ev.getCreated().compareTo(cal[2])<0){
 						finalList.add(ev);
 						if (!ipList.contains(ev.getIpAddress())){
 							ipList.add(e.getIpAddress());

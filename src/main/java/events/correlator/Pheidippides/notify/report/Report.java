@@ -101,13 +101,10 @@ public class Report {
 
 		try {
 			while (result.next()) {
-				if (result.getString(1) != "255.255.255.255") {
-					resultMap.put(result.getString(1), result.getInt(2));
-				}
+				resultMap.put(result.getString(1), result.getInt(2));
 			}
 			return resultMap;
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println(e.getMessage());
 			return null;

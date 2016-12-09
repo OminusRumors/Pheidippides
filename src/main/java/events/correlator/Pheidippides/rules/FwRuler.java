@@ -1,6 +1,6 @@
 package events.correlator.Pheidippides.rules;
 
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 
 import events.correlator.Pheidippides.database.DbConnector;
@@ -18,7 +18,7 @@ public class FwRuler {
 	public FwRuler() {
 	}
 
-	public void checkTraffic(Date start, Date end) {
+	public void checkTraffic(Calendar start, Calendar end) {
 		List<FwEvent> orgList = dbc.getFwByType("traffic", start, end);
 
 		for (FwEvent e : orgList) {
@@ -30,7 +30,7 @@ public class FwRuler {
 		}
 	}
 
-	public void checkAppCtrl(Date start, Date end) {
+	public void checkAppCtrl(Calendar start, Calendar end) {
 		List<FwEvent> orgList = dbc.getFwByType("app-ctrl", start, end);
 
 		for (FwEvent e : orgList) {
@@ -45,7 +45,7 @@ public class FwRuler {
 		}
 	}
 
-	public void checkDlp(Date start, Date end) {
+	public void checkDlp(Calendar start, Calendar end) {
 		List<FwEvent> orgList = dbc.getFwByType("dlp", start, end);
 
 		if (!orgList.isEmpty()) {
@@ -53,7 +53,7 @@ public class FwRuler {
 		}
 	}
 
-	public void checkAnomaly(Date start, Date end) {
+	public void checkAnomaly(Calendar start, Calendar end) {
 		List<FwEvent> orgList = dbc.getFwByType("anomaly", start, end);
 
 		if (!orgList.isEmpty()) {
@@ -61,7 +61,7 @@ public class FwRuler {
 		}
 	}
 
-	public void checkWebFilter(Date start, Date end) {
+	public void checkWebFilter(Calendar start, Calendar end) {
 		List<FwEvent> orgLsit = dbc.getFwByType("webfilter", start, end);
 
 		for (FwEvent e : orgLsit) {
@@ -71,7 +71,7 @@ public class FwRuler {
 		}
 	}
 
-	public void checkSystem(Date start, Date end){
+	public void checkSystem(Calendar start, Calendar end){
 		List<FwEvent> orgList=dbc.getFwByType("system", start, end);
 
 		for (FwEvent e:orgList){
