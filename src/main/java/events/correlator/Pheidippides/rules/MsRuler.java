@@ -79,7 +79,7 @@ public class MsRuler {
 					eventUserList.add(e);
 				}
 			}
-			eventList.removeAll(eventUserList);
+//			eventList.removeAll(eventUserList);
 			
 			for (MsEvent ev:eventUserList){
 				Calendar[] cal=dateToCalRange(ev.getCreated(), 3);
