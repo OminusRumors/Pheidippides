@@ -129,7 +129,7 @@ public final class DbConnector {
 //		}
 	}
 
-	public List<MsEvent> getMsByEventId(int eventId, boolean filtered, Calendar start, Calendar end) {
+	public List<MsEvent> getMsByEventId(int eventId, boolean filtered, String start, String end) {
 		Statement stm=null;
 		ResultSet raw = null;
 		try {
@@ -138,12 +138,14 @@ public final class DbConnector {
 			String sql;
 
 			if (filtered) {
-				sql = "SELECT * FROM filtered_ms WHERE eventId=" + eventId + " AND created BETWEEN " +
-			this.datesToSting(start, end) + " ORDER BY created;";
+				sql = "SELECT * FROM filtered_ms WHERE eventId=" + eventId + " AND created BETWEEN '" +
+			start + "' AND '" + end + "' ORDER BY created;";
 			} else {
-				sql = "SELECT * FROM security_table WHERE eventId=" + eventId + " AND created BETWEEN " + 
-			this.datesToSting(start, end) + " ORDER BY created;";
+				sql = "SELECT * FROM security_table WHERE eventId=" + eventId + " AND created BETWEEN '" + 
+						start + "' AND '" + end + "' ORDER BY created;";
 			}
+			
+			System.out.println("DbConnector.getMsEventId: " + sql);
 
 			raw = stm.executeQuery(sql);
 			while (raw.next()) {

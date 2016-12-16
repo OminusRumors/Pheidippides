@@ -36,8 +36,8 @@ public class FwRuler {
 		for (FwEvent e : orgList) {
 			if (e.getAction() != "pas.*") {
 				if (Helper.getFwLevels().get(e.getLevel()) >= 3) {
-
 					// TODO: implement blacklist, scan actions
+					
 				} else {
 					// TODO: implement blacklist, scan, alert
 				}

@@ -1,5 +1,7 @@
 package events.correlator.Pheidippides.rules;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -24,7 +26,7 @@ public class MsRuler {
 	}
 
 	public MsRuler() {
-
+		
 	}
 
 	/** Gets the date of the current event and returns a calendar array containing the min and max time according to window.
@@ -52,11 +54,14 @@ public class MsRuler {
 		return retArray;
 	}
 
-	public void checkId4625(Calendar start, Calendar end) {
+	//4625: failed logon
+	public void checkId4625(String start, String end) {
+
 		List<MsEvent> eventList = dbc.getMsByEventId(4625, true, start, end); // get all events with id 4625
 		List<MsEvent> eventUserList = new ArrayList<MsEvent>();
-		List<MsEvent> finalList=new ArrayList<MsEvent>();
+		List<MsEvent> slidWinList=new ArrayList<MsEvent>();
 		List<String> targetUserList=new ArrayList<String>();
+		
 		
 		//loop for creating a distinct username list
 		for (MsEvent e : eventList) {
@@ -72,47 +77,58 @@ public class MsRuler {
 			for (MsEvent e:eventList){
 				if (e.getTargetUsername()==user){
 					eventUserList.add(e);
-					eventList.remove(e);
 				}
 			}
-			for (MsEvent e:eventUserList){
-				Calendar[] cal=dateToCalRange(e.getCreated(), 3);
+			eventList.removeAll(eventUserList);
+			
+			for (MsEvent ev:eventUserList){
+				Calendar[] cal=dateToCalRange(ev.getCreated(), 3);
 				List<String> ipList=new ArrayList<String>();
+				System.out.println(cal[0].getTime() + " " + cal[2].getTime());
+
+				//hit the db to get all with id=4625 between the slid window algorithm
+				SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				slidWinList=dbc.getMsByEventId(4625, true, sdf.format(cal[0].getTime()), sdf.format(cal[2].getTime()));
+				System.out.println(slidWinList.isEmpty());
+				for (MsEvent even:slidWinList){
+					System.out.println(even);
+				}
 				
-				//loop for getting all the events of the specific user in a defined time range and save them to "finalList"
-				for (MsEvent ev:eventUserList){
-					if (ev.getCreated().compareTo(cal[0])>0 && ev.getCreated().compareTo(cal[2])<0){
-						finalList.add(ev);
-						if (!ipList.contains(ev.getIpAddress())){
-							ipList.add(e.getIpAddress());
-						}
+				//loop for getting all the events of the specified user in a defined time range and save them to "finalList"
+				for (MsEvent e : slidWinList){
+					if (!ipList.contains(e.getIpAddress())){
+						ipList.add(e.getIpAddress());
 					}
 				}
-				if (finalList.size()>=6){
+
+				System.out.println(slidWinList.toString());
+
+				if (slidWinList.size()>=5){
 					//alert, scan
+					System.out.println("Inside if in check 4625.");
 					Map<String,String> reportData=new HashMap<String, String>();
-					reportData.put("count", Integer.toString(finalList.size()));
-					String msg=String.format("User %s failed %d times to logon from ip: %s", e.getTargetUsername(),
-							Integer.toString(finalList.size()), ipList.toString());
+					reportData.put("count", Integer.toString(slidWinList.size()));
+					String msg=String.format("User %s failed %d times to logon from ip: %s", ev.getTargetUsername(),
+							Integer.toString(slidWinList.size()), ipList.toString());
 					reportData.put("title", "Logon failure threshold reached");
 					reportData.put("message", msg);
 					reportData.put("eventId", "4625");
 					reportData.put("eventDesc", "Logon failure");
-					if (Helper.getStatus().containsKey(e.getStatus())){
-						reportData.put("reason", Helper.getStatus().get(e.getStatus()));	
+					if (Helper.getStatus().containsKey(ev.getStatus())){
+						reportData.put("reason", Helper.getStatus().get(ev.getStatus()));	
 					}
 					else{
 						reportData.put("reason", "unknown");
 					}
 					String[] rec={"georgevassiliadis@hotmail.com", "georgios.vasileiadis@diagnostiekvooru.nl"};
-					//alert.sendEmail({"georgevassiliadis@hotmail.com", "georgios.vasileiadis@diagnostiekvooru.nl"}, reportData);
 					Alert.sendEmail(rec, reportData);
 				}
 			}
 		}
 	}
 
-	public void checkId4768(Calendar start, Calendar end) {
+	//kerberos auth ticket was requested
+	public void checkId4768(String start, String end) {
 
 		List<MsEvent> list4768 = dbc.getMsByEventId(4768, true, start, end);
 		List<MsEvent> newList4768 = new ArrayList<MsEvent>();
@@ -146,7 +162,8 @@ public class MsRuler {
 		}
 	}
 
-	public void checkId4769(Calendar start, Calendar end) {
+	//kerberos service ticket was requested
+	public void checkId4769(String start, String end) {
 		List<MsEvent> orgEventList = dbc.getMsByEventId(4769, true, start, end);
 		List<MsEvent> filtList = new ArrayList<MsEvent>();
 		List<MsEvent> finalList = new ArrayList<MsEvent>();
@@ -161,7 +178,7 @@ public class MsRuler {
 		for (MsEvent e : filtList) {
 			slwin = this.dateToCalRange(e.getCreated(), 3);
 
-			if (e.getCreated().compareTo(slwin[0].getTime()) > 0 && e.getCreated().compareTo(slwin[2].getTime()) < 0) {
+			if (e.getCreated().compareTo(slwin[0]) > 0 && e.getCreated().compareTo(slwin[2]) < 0) {
 				finalList.add(e);
 			}
 		}
@@ -171,7 +188,8 @@ public class MsRuler {
 		}
 	}
 
-	public void checkId4776(Date start, Date end) {
+	//credentials validation attempt
+	public void checkId4776(String start, String end) {
 		List<MsEvent> orgList = dbc.getMsByEventId(4776, true, start, end);
 		List<MsEvent> filtList = new ArrayList<MsEvent>();
 
@@ -180,11 +198,24 @@ public class MsRuler {
 				filtList.add(e);
 			}
 		}
-
-		// TODO: implement further actions
+		
+		//make a new list and insert all TargetUserNames
+		List<String> usersList=new ArrayList<String>();
+		for (MsEvent e : filtList){
+			if (!usersList.contains(e.getTargetUsername())){
+				usersList.add(e.getTargetUsername());
+			}
+		}
+		
+//		for (String user : usersList){
+//			for (MsEvent e : filtList){
+//				if 
+//			}
+//		}
 	}
 
-	public void checkId5136(Date start, Date end){
+	//directory service object modified
+	public void checkId5136(String start, String end){
 		List<MsEvent> orgList =dbc.getMsByEventId(5136, true, start, end);
 		List<MsEvent> list4662=dbc.getMsByEventId(4662, false, start, end);
 		
@@ -199,15 +230,18 @@ public class MsRuler {
 		}
 	}
 	
+	//WFP has permitted a bind to a local port
 	public void checkId5158(Date start, Date end){
 		// TODO: implementation
 	}
 	
+	//network policy server granted access to a user
 	public void checkId6272(Date start, Date end){
 		// TODO: implementation
 	}
 	
-	public void checkId6273(Date start, Date end){
+	//network policy server denied access to a user
+	public void checkId6273(Calendar start, Calendar end){
 		List<MsEvent> orgList=dbc.getMsByEventId(6273, false, start, end);
 		
 		if (!orgList.isEmpty()){
