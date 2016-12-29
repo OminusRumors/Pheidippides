@@ -27,7 +27,7 @@ public class Alert {
 		});
 
 		try {
-			Address[] recipientsArray={};
+			Address[] recipientsArray= new Address[recipients.length];
 			for (int i=0;i<recipients.length;i++){
 				recipientsArray[i]= new InternetAddress(recipients[i]);
 			}
@@ -35,7 +35,7 @@ public class Alert {
 			message.setFrom(new InternetAddress("ominusrumors@gmail.com"));
 			message.setRecipients(Message.RecipientType.TO, recipientsArray);
 			message.setSubject(msg.get("title"));
-			message.setText(msg.get(message));
+			message.setText(msg.get("message"));
 
 			Transport.send(message);
 

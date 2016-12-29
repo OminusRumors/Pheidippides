@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import events.correlator.Pheidippides.database.DbConnector;
 import events.correlator.Pheidippides.notify.alert.Alert;
@@ -29,35 +31,33 @@ public class MsRuler {
 		
 	}
 
-	/** Gets the date of the current event and returns a calendar array containing the min and max time according to window.
-	 * @param current Current event time.
-	 * @param window The time window in seconds.
-	 * @return A calendar array.
-	 */
-	private Calendar[] dateToCalRange(Calendar current, int window) {
-		Calendar[] retArray = new Calendar[3];
-
-		// transforms the DATE of the event to CALENDAR instance
-		Calendar curDate = Calendar.getInstance();
-		retArray[1] = curDate;
-
-		// gets the time of -2 seconds from the current time
-		Calendar minDate = Calendar.getInstance();
-		minDate.add(Calendar.SECOND, -window);
-		retArray[0] = minDate;
-
-		// gets the time of +2 seconds from the current time
-		Calendar maxDate = Calendar.getInstance();
-		maxDate.add(Calendar.SECOND, +window);
-		retArray[2] = maxDate;
-
-		return retArray;
+	private Calendar getPrevious(Calendar current, int window) {
+		
+		Calendar ret=Calendar.getInstance();
+		ret=current;
+		ret.add(Calendar.SECOND, -window);
+		return ret;
+		
+	}
+	
+	private Calendar getNext(Calendar current, int window) {
+		
+		Calendar ret=Calendar.getInstance();
+		ret=current;
+		ret.add(Calendar.SECOND, window);
+		return ret;
+		
 	}
 
 	//4625: failed logon
 	public void checkId4625(String start, String end) {
 
 		List<MsEvent> eventList = dbc.getMsByEventId(4625, true, start, end); // get all events with id 4625
+		
+		for (MsEvent e:eventList){
+			System.out.println(e.getKeyId());
+		}
+		
 		List<MsEvent> eventUserList = new ArrayList<MsEvent>();
 		List<MsEvent> slidWinList=new ArrayList<MsEvent>();
 		List<String> targetUserList=new ArrayList<String>();
@@ -75,24 +75,19 @@ public class MsRuler {
 			
 			//loop for creating a list with all the events from the specific user
 			for (MsEvent e:eventList){
-				if (e.getTargetUsername()==user){
+				if (Objects.equals(e.getTargetUsername(),user)){
 					eventUserList.add(e);
 				}
 			}
 //			eventList.removeAll(eventUserList);
 			
 			for (MsEvent ev:eventUserList){
-				Calendar[] cal=dateToCalRange(ev.getCreated(), 3);
 				List<String> ipList=new ArrayList<String>();
-				System.out.println(cal[0].getTime() + " " + cal[2].getTime());
 
 				//hit the db to get all with id=4625 between the slid window algorithm
 				SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				slidWinList=dbc.getMsByEventId(4625, true, sdf.format(cal[0].getTime()), sdf.format(cal[2].getTime()));
-				System.out.println(slidWinList.isEmpty());
-				for (MsEvent even:slidWinList){
-					System.out.println(even);
-				}
+				slidWinList=dbc.getMsByEventId(4625, true, sdf.format(getPrevious(ev.getCreated(), 3).getTime()),
+						sdf.format(getNext(ev.getCreated(), 3).getTime()));
 				
 				//loop for getting all the events of the specified user in a defined time range and save them to "finalList"
 				for (MsEvent e : slidWinList){
@@ -101,15 +96,15 @@ public class MsRuler {
 					}
 				}
 
-				System.out.println(slidWinList.toString());
+				System.out.println("Sliding window list: " + slidWinList.size());
 
-				if (slidWinList.size()>=5){
+				if (slidWinList.size()>=4){
 					//alert, scan
 					System.out.println("Inside if in check 4625.");
 					Map<String,String> reportData=new HashMap<String, String>();
 					reportData.put("count", Integer.toString(slidWinList.size()));
 					String msg=String.format("User %s failed %d times to logon from ip: %s", ev.getTargetUsername(),
-							Integer.toString(slidWinList.size()), ipList.toString());
+							slidWinList.size(), ipList.toString());
 					reportData.put("title", "Logon failure threshold reached");
 					reportData.put("message", msg);
 					reportData.put("eventId", "4625");
