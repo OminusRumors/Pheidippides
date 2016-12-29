@@ -131,7 +131,7 @@ public class MsRuler {
 
 		// create new list with failed attempts of kerberos auth ticket events(4768)
 		for (MsEvent e : list4768) {
-			if (e.getKeywords() == "0x8010.*") {
+			if (e.getKeywords().matches("0x8010(.*)")) {
 				newList4768.add(e);
 			}
 		}
@@ -147,14 +147,18 @@ public class MsRuler {
 				username_ip.put(e.getTargetUsername(), ip);
 			}
 		}
+		Map<String, String> reportData = null;
 		// TODO: implement action after Mapping the targetusernames is finished
 		for (Map.Entry<String, String[]> e:username_ip.entrySet()){
-			Map<String, String> reportData=new HashMap<String, String>();
+			reportData=new HashMap<String, String>();
+			reportData.put("title", "Failed auth");
 			reportData.put("count", Integer.toString(e.getValue().length));
 			reportData.put("message", "Kerberos authentication ticket request failed.");
 			reportData.put("eventId", Integer.toString(4768));
 			reportData.put("reason", "unknown");
 		}
+		String[] rec={"georgevassiliadis@hotmail.com", "georgios.vasileiadis@diagnostiekvooru.nl"};
+		Alert.sendEmail(rec, reportData);
 	}
 
 	//kerberos service ticket was requested

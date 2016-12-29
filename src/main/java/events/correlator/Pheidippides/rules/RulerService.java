@@ -30,21 +30,16 @@ public class RulerService {
 	@GET
 	@Path("/logonfails")
 	public Response check4625(@QueryParam("start") String start, @QueryParam("end") String end){
-//		try{
-//			SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//			Calendar st=Calendar.getInstance();
-//			Calendar en=Calendar.getInstance();
-//			st.setTime(sdf.parse(start));
-//			en.setTime(sdf.parse(end));
+
 			msRuler.checkId4625(start, end);
 			return Response.ok("Check your hotmail and DvU mail!").build();
-//		}
-//		catch(IllegalArgumentException | NullPointerException ex){
-//			return Response.status(500).entity(ex.getLocalizedMessage()).build();
-//		}
-//		catch(Exception ex){
-//			return Response.status(500).entity(ex.getLocalizedMessage()).build();
-//		}
+
 	}
 	
+	@GET
+	@Path("/authrequest")
+	public Response check4768(@QueryParam("start") String start, @QueryParam("end") String end){
+		msRuler.checkId4768(start, end);
+		return Response.ok("Check your emails for 4768 event.").build();
+	}
 }
