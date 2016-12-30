@@ -110,12 +110,9 @@ public final class Helper {
 		Status.put("0x43","No TGT was presented or available"); 
 		Status.put("0x44","Incorrect domain or principal");
 		Status.put("0XC000006D", "This is either due to a bad username or authentication information");
-		Status.put("0XC000006D", "This is either due to a bad username or authentication information");
-		Status.put("0XC000006E", "Unknown user name or bad password.");
 		Status.put("0XC000006E", "Unknown user name or bad password.");
 		Status.put("0XC0000193", "account expiration");
 		Status.put("0XC000006E", "Unknown user name or bad password.");
-		Status.put("0XC000006D", "This is either due to a bad username or authentication information");
 		Status.put("0XC000006D", "This is either due to a bad username or authentication information");
 		Status.put("0XC000018C", "The logon request failed because the trust relationship between the primary domain and the trusted domain failed.");
 		Status.put("0XC000005E", "There are currently no logon servers available to service the logon request.");

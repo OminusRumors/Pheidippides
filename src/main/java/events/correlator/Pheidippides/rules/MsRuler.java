@@ -14,6 +14,7 @@ import java.util.Objects;
 
 import events.correlator.Pheidippides.database.DbConnector;
 import events.correlator.Pheidippides.notify.alert.Alert;
+import events.correlator.Pheidippides.models.GenericReportModel;
 //import events.correlator.Pheidippides.models.Event;
 import events.correlator.Pheidippides.models.MsEvent;
 import events.correlator.Pheidippides.utilities.Helper;
@@ -212,20 +213,35 @@ public class MsRuler {
 				filtList.add(e);
 			}
 		}
-		
-		//make a new list and insert all TargetUserNames
-		List<String> usersList=new ArrayList<String>();
-		for (MsEvent e : filtList){
-			if (!usersList.contains(e.getTargetUsername())){
-				usersList.add(e.getTargetUsername());
+		if (!filtList.isEmpty()){
+			//make a new list and insert all TargetUserNames
+			List<String> usersList=new ArrayList<String>();
+			for (MsEvent e : filtList){
+				if (!usersList.contains(e.getTargetUsername())){
+					usersList.add(e.getTargetUsername());
+				}
+			}
+
+			for (String user : usersList){
+				List<MsEvent> userEventsList=new ArrayList<>();
+				for (MsEvent e: filtList){
+					if (e.getTargetUsername()==user){
+						userEventsList.add(e); //collects all failed 4776 events for the specific user
+					}
+				}
+				filtList.removeAll(userEventsList);
+				GenericReportModel report=new GenericReportModel();
+				// TODO: check why email is not received
+				report.setElement("title", "Domain controller validation failure");
+				String msg=String.format("Domain controller could not validate %d times the user %s because: %s.",
+						userEventsList.size(), userEventsList.get(0).getTargetUsername(), 
+						Helper.getStatus().get(userEventsList.get(0).getStatus()));
+				report.setElement("message", msg);
+				
+				String[] rec={"georgevassiliadis@hotmail.com", "georgios.vasileiadis@diagnostiekvooru.nl"};
+				Alert.sendEmail(rec, report.getReportData());
 			}
 		}
-		
-//		for (String user : usersList){
-//			for (MsEvent e : filtList){
-//				if 
-//			}
-//		}
 	}
 
 	//directory service object modified
