@@ -127,7 +127,7 @@ public class MsRuler {
 
 		List<MsEvent> list4768 = dbc.getMsByEventId(4768, true, start, end);
 		List<MsEvent> newList4768 = new ArrayList<MsEvent>();
-		Map<String, String[]> username_ip = new HashMap<String, String[]>();
+		Map<String, List<String>> username_ip = new HashMap<String, List<String>>();
 
 		// create new list with failed attempts of kerberos auth ticket events(4768)
 		for (MsEvent e : list4768) {
@@ -138,22 +138,25 @@ public class MsRuler {
 		for (MsEvent e : newList4768) {
 			//if username exists in list and ipaddress does not exist for that username
 			if (username_ip.containsKey(e.getTargetUsername()) && 
-					!Arrays.asList(username_ip.get(e.getTargetUsername())).contains(e.getIpAddress())) {
-				String[] addip = username_ip.get(e.getTargetUsername());
-				addip[addip.length]=e.getIpAddress();
+					!username_ip.get(e.getTargetUsername()).contains(e.getIpAddress())) {
+				List<String> addip = new ArrayList<String>(username_ip.get(e.getTargetUsername()));
+				addip.add(e.getIpAddress());
 				username_ip.put(e.getTargetUsername(), addip);
 			} else {
-				String[] ip={e.getIpAddress()};
+				List<String> ip=new ArrayList<String>();
+				ip.add(e.getIpAddress());
 				username_ip.put(e.getTargetUsername(), ip);
 			}
 		}
 		Map<String, String> reportData = null;
 		// TODO: implement action after Mapping the targetusernames is finished
-		for (Map.Entry<String, String[]> e:username_ip.entrySet()){
+		for (Map.Entry<String, List<String>> e:username_ip.entrySet()){
 			reportData=new HashMap<String, String>();
 			reportData.put("title", "Failed auth");
-			reportData.put("count", Integer.toString(e.getValue().length));
-			reportData.put("message", "Kerberos authentication ticket request failed.");
+			reportData.put("count", Integer.toString(e.getValue().size()));
+			String msg=String.format("Kerberos authentication failed %d times to verify the user %s from ip: %s", 
+					e.getValue().size(), e.getKey(), e.getValue());
+			reportData.put("message", msg);
 			reportData.put("eventId", Integer.toString(4768));
 			reportData.put("reason", "unknown");
 		}
@@ -169,7 +172,7 @@ public class MsRuler {
 		Calendar[] slwin;
 
 		for (MsEvent e : orgEventList) {
-			if (e.getKeywords() == "0x801.*") {
+			if (e.getKeywords().matches("0x801(.*)")) {
 				filtList.add(e);
 			}
 		}
