@@ -149,7 +149,7 @@ public class MsRuler {
 			}
 		}
 		Map<String, String> reportData = null;
-		// TODO: implement action after Mapping the targetusernames is finished
+		
 		for (Map.Entry<String, List<String>> e:username_ip.entrySet()){
 			reportData=new HashMap<String, String>();
 			reportData.put("title", "Failed auth");
@@ -169,7 +169,6 @@ public class MsRuler {
 		List<MsEvent> orgEventList = dbc.getMsByEventId(4769, true, start, end);
 		List<MsEvent> filtList = new ArrayList<MsEvent>();
 		List<MsEvent> finalList = new ArrayList<MsEvent>();
-		Calendar[] slwin;
 
 		for (MsEvent e : orgEventList) {
 			if (e.getKeywords().matches("0x801(.*)")) {
@@ -177,16 +176,29 @@ public class MsRuler {
 			}
 		}
 
-		for (MsEvent e : filtList) {
-			slwin = this.dateToCalRange(e.getCreated(), 3);
-
-			if (e.getCreated().compareTo(slwin[0]) > 0 && e.getCreated().compareTo(slwin[2]) < 0) {
-				finalList.add(e);
+		for (MsEvent e1 : filtList) {
+			for (MsEvent e2 : filtList){
+				if ((e1.getCreated().getTimeInMillis() - e2.getCreated().getTimeInMillis() >= 3000 && 
+						e1.getCreated().getTimeInMillis() - e2.getCreated().getTimeInMillis() <= -3000) || (e1==e2)){
+					finalList.add(e1);
+				}
 			}
 		}
 
-		if (finalList.size() > 4) {
-			// TODO: implement actions alarm
+		if (finalList.size() >= 4) {
+			Map<String, String> report=new HashMap<>();
+			List<String> ipList=new ArrayList<>();
+			for (MsEvent e:finalList){
+				if (!ipList.contains(e.getIpAddress())){
+					ipList.add(e.getIpAddress());
+				}
+			}
+			report.put("title", "Kerberos service ticket failure.");
+			String msg=String.format("Kerberos service ticket request was denied %d times for user: %s from IP: %s",
+					finalList.size(), finalList.get(0).getTargetUsername(), ipList);
+			report.put("message", msg);
+			String[] rec={"georgevassiliadis@hotmail.com", "georgios.vasileiadis@diagnostiekvooru.nl"};
+			Alert.sendEmail(rec, report);
 		}
 	}
 
