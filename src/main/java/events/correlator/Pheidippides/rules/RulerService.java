@@ -56,4 +56,11 @@ public class RulerService {
 		msRuler.checkId4776(start, end);
 		return Response.ok("Check your emails for 4769 event.").build();
 	}
+	
+	@GET
+	@Path("/modification")
+	public Response check5136(@QueryParam("start") String start, @QueryParam("end") String end){
+		msRuler.checkId5136(start, end);
+		return Response.ok("Check your emails for 5136 and 4662 events.").build();
+	}
 }

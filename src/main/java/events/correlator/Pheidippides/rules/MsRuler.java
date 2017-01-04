@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -213,48 +214,114 @@ public class MsRuler {
 				filtList.add(e);
 			}
 		}
-		if (!filtList.isEmpty()){
-			//make a new list and insert all TargetUserNames
-			List<String> usersList=new ArrayList<String>();
-			for (MsEvent e : filtList){
-				if (!usersList.contains(e.getTargetUsername())){
+
+		if (!filtList.isEmpty()) {
+			// make a new list and insert all TargetUserNames
+			List<String> usersList = new ArrayList<String>();
+			for (MsEvent e : filtList) {
+				if (!usersList.contains(e.getTargetUsername())) {
 					usersList.add(e.getTargetUsername());
 				}
 			}
 
-			for (String user : usersList){
-				List<MsEvent> userEventsList=new ArrayList<>();
-				for (MsEvent e: filtList){
-					if (e.getTargetUsername()==user){
-						userEventsList.add(e); //collects all failed 4776 events for the specific user
+			for (String user : usersList) {
+				List<MsEvent> userEventsList = new ArrayList<>();
+				for (MsEvent e : filtList) {
+					if (e.getTargetUsername() == user) {
+						userEventsList.add(e); // collects all failed 4776
+												// events for the specific user
 					}
 				}
 				filtList.removeAll(userEventsList);
-				GenericReportModel report=new GenericReportModel();
+				GenericReportModel report = new GenericReportModel();
 				// TODO: check why email is not received
 				report.setElement("title", "Domain controller validation failure");
-				String msg=String.format("Domain controller could not validate %d times the user %s because: %s.",
-						userEventsList.size(), userEventsList.get(0).getTargetUsername(), 
+				String msg = String.format("Domain controller could not validate %d times the user %s because: %s.",
+						userEventsList.size(), userEventsList.get(0).getTargetUsername(),
 						Helper.getStatus().get(userEventsList.get(0).getStatus()));
 				report.setElement("message", msg);
-				
-				String[] rec={"georgevassiliadis@hotmail.com", "georgios.vasileiadis@diagnostiekvooru.nl"};
+
+				String[] rec = { "georgevassiliadis@hotmail.com", "georgios.vasileiadis@diagnostiekvooru.nl" };
 				Alert.sendEmail(rec, report.getReportData());
+			}
+		}
+	}
+	/* Needs better implementation. Take all 5136, then check if max 2 mins earlier than 5136 there was a 4662 
+	 * with the same subjectlogonid. If not raise alarm.
+	 * 
+	 */
+	public void checkId5136_2(String start, String end){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		List<MsEvent> list5136 =dbc.getMsByEventId(5136, true, start, end);
+		List<MsEvent> list4662=null;
+		
+		for (MsEvent e5136 : list5136){
+			list4662.clear();
+			list4662=dbc.getMsByEventId(4662, true, sdf.format(getPrevious(e5136.getCreated(), 60)), sdf.format(getNext(e5136.getCreated(), 3)));
+			if (!list4662.isEmpty()){
+				Map<String, MsEvent> map4662=new HashMap<>();
+				for (MsEvent e : list4662){
+//					map4662.put(e.getSubjectLogonId(), e);
+					if ()
+				}
+				
+			}
+			else
+			{
+				
 			}
 		}
 	}
 
 	//directory service object modified
 	public void checkId5136(String start, String end){
+		//this block of try and catch and the lines surrounding it are for getting the 4662 events
+		// 1 minute earlier from what the user has specified
+		SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Calendar cal=Calendar.getInstance();
+		try{
+			cal.setTime(sdf.parse(start));
+		}
+		catch (NullPointerException enull){
+			System.out.println("MsRuler.checkId5136() null date supplied.");
+		}
+		catch (ParseException ep){
+			System.out.println("MsRuler.checkId5136() parsing start date failed.");
+		}
+		cal.add(Calendar.MINUTE, -1);
+		String Sstart=sdf.format(cal.getTime());
 		List<MsEvent> orgList =dbc.getMsByEventId(5136, true, start, end);
-		List<MsEvent> list4662=dbc.getMsByEventId(4662, false, start, end);
+		List<MsEvent> list4662=dbc.getMsByEventId(4662, true, Sstart, end);
 		
+		Iterator<MsEvent> it4662=list4662.iterator();
+		Iterator<MsEvent> it5136=orgList.iterator();
 		for (MsEvent e5136 : orgList){
 			for (MsEvent e4662 :list4662){
-				if (e5136.getSubjectLogonId()==e4662.getSubjectLogonId()){
-					if (e5136.getCreated().compareTo(e4662.getCreated())<0){
+				if (Objects.equals(e5136.getSubjectLogonId(), e4662.getSubjectLogonId())){
+					if (e5136.getCreated().getTimeInMillis()-e4662.getCreated().getTimeInMillis()<0){
 						// TODO: this is bad, implement actions
+						GenericReportModel reportData=new GenericReportModel();
+						reportData.setElement("title", "Directory service object illegal nodification");
+						String msg=String.format("There is no logged operation changing an object, but still an object was changed with Subject Logon Id: %s.", 
+								e5136.getSubjectLogonId());
+						reportData.setElement("message", msg);
+						reportData.setElement("eventId", Integer.toString(5136));
+						
+						String[] rec = { "georgevassiliadis@hotmail.com", "georgios.vasileiadis@diagnostiekvooru.nl" };
+						Alert.sendEmail(rec, reportData.getReportData());
+						break;
 					}
+				}
+				if (!it4662.hasNext()){
+					GenericReportModel reportData=new GenericReportModel();
+					reportData.setElement("title", "Directory service object illegal nodification");
+					String msg=String.format("There is no logged operation changing an object, but still an object was changed with Subject Logon Id: %s.", 
+							e5136.getSubjectLogonId());
+					reportData.setElement("message", msg);
+					reportData.setElement("eventId", Integer.toString(5136));
+					
+					String[] rec = { "georgevassiliadis@hotmail.com", "georgios.vasileiadis@diagnostiekvooru.nl" };
+					Alert.sendEmail(rec, reportData.getReportData());
 				}
 			}
 		}
