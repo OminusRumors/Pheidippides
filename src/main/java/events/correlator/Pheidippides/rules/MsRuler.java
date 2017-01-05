@@ -234,7 +234,6 @@ public class MsRuler {
 				}
 				filtList.removeAll(userEventsList);
 				GenericReportModel report = new GenericReportModel();
-				// TODO: check why email is not received
 				report.setElement("title", "Domain controller validation failure");
 				String msg = String.format("Domain controller could not validate %d times the user %s because: %s.",
 						userEventsList.size(), userEventsList.get(0).getTargetUsername(),
@@ -253,23 +252,35 @@ public class MsRuler {
 	public void checkId5136_2(String start, String end){
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		List<MsEvent> list5136 =dbc.getMsByEventId(5136, true, start, end);
-		List<MsEvent> list4662=null;
+		List<MsEvent> list4662=new ArrayList<>();
+		String msg=null;
 		
+		outerloop:
 		for (MsEvent e5136 : list5136){
 			list4662.clear();
-			list4662=dbc.getMsByEventId(4662, true, sdf.format(getPrevious(e5136.getCreated(), 60)), sdf.format(getNext(e5136.getCreated(), 3)));
+			Long e5136Time=new Long(e5136.getCreated().getTimeInMillis());
+			list4662=dbc.getMsByEventId(4662, true, sdf.format(getPrevious(e5136.getCreated(), 120).getTime()), sdf.format(getNext(e5136.getCreated(), 3).getTime()));
 			if (!list4662.isEmpty()){
-				Map<String, MsEvent> map4662=new HashMap<>();
-				for (MsEvent e : list4662){
-//					map4662.put(e.getSubjectLogonId(), e);
-					if ()
+				for (MsEvent e4662 : list4662){
+					Long e4662Time=new Long(e4662.getCreated().getTimeInMillis());
+					if (Objects.equals(e5136.getSubjectLogonId(), e4662.getSubjectLogonId()) && 
+							e5136Time >= e4662Time){
+						continue outerloop;
+					}
+					else if (e5136Time < e4662Time){
+						msg="An object was modified before an operation took place." + e5136.getSubjectLogonId();
+					}
+					else
+					{
+						msg="No object operation recorded before modification.";
+					}
 				}
-				
 			}
 			else
 			{
-				
+				msg="There are no 'operation performed' events before the modification." + e5136.getSubjectLogonId();
 			}
+			System.out.println(msg);
 		}
 	}
 

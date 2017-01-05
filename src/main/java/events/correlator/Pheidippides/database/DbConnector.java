@@ -145,7 +145,7 @@ public final class DbConnector {
 						start + "' AND '" + end + "' ORDER BY created;";
 			}
 			
-			System.out.println("DbConnector.getMsEventId: " + sql);
+//			System.out.println("DbConnector.getMsEventId: " + sql);
 
 			raw = stm.executeQuery(sql);
 			while (raw.next()) {

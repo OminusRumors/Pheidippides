@@ -60,7 +60,7 @@ public class RulerService {
 	@GET
 	@Path("/modification")
 	public Response check5136(@QueryParam("start") String start, @QueryParam("end") String end){
-		msRuler.checkId5136(start, end);
+		msRuler.checkId5136_2(start, end);
 		return Response.ok("Check your emails for 5136 and 4662 events.").build();
 	}
 }
