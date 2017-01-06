@@ -35,7 +35,7 @@ public class MsRuler {
 
 	private Calendar getPrevious(Calendar current, int window) {
 		
-		Calendar ret=Calendar.getInstance();
+		Calendar ret=new GregorianCalendar();
 		ret=current;
 		ret.add(Calendar.SECOND, -window);
 		return ret;
@@ -44,7 +44,7 @@ public class MsRuler {
 	
 	private Calendar getNext(Calendar current, int window) {
 		
-		Calendar ret=Calendar.getInstance();
+		Calendar ret=new GregorianCalendar();
 		ret=current;
 		ret.add(Calendar.SECOND, window);
 		return ret;
@@ -259,12 +259,21 @@ public class MsRuler {
 		for (MsEvent e5136 : list5136){
 			list4662.clear();
 			Long e5136Time=new Long(e5136.getCreated().getTimeInMillis());
-			list4662=dbc.getMsByEventId(4662, true, sdf.format(getPrevious(e5136.getCreated(), 120).getTime()), sdf.format(getNext(e5136.getCreated(), 3).getTime()));
+			
+			//the calendars have the same value, so list4662 is always empty
+			Calendar past=(Calendar) e5136.getCreated().clone();
+			Calendar future=(Calendar) e5136.getCreated().clone();
+			past.add(Calendar.SECOND, -120);
+			future.add(Calendar.SECOND, 1);
+			System.out.println("Before: " + sdf.format(past.getTime()));
+			System.out.println("After: " + sdf.format(future.getTime()));
+			
+			list4662=dbc.getMsByEventId(4662, true, sdf.format(past.getTime()), sdf.format(future.getTime()));
+			
 			if (!list4662.isEmpty()){
 				for (MsEvent e4662 : list4662){
 					Long e4662Time=new Long(e4662.getCreated().getTimeInMillis());
-					if (Objects.equals(e5136.getSubjectLogonId(), e4662.getSubjectLogonId()) && 
-							e5136Time >= e4662Time){
+					if (Objects.equals(e5136.getSubjectLogonId(), e4662.getSubjectLogonId()) &&	e5136Time >= e4662Time){
 						continue outerloop;
 					}
 					else if (e5136Time < e4662Time){
