@@ -22,8 +22,9 @@ public class FwRuler {
 		List<FwEvent> orgList = dbc.getFwByType("traffic", start, end);
 
 		for (FwEvent e : orgList) {
-			if (e.getAction() == "den.*" && Helper.getFwLevels().get(e.getLevel()) <= 3) {
+			if (e.getAction().matches("den.*") && Helper.getFwLevels().get(e.getLevel()) <= 3) {
 				// TODO: implement actions for scan and stats
+				HttpGet httpGet=new HttpGet("sth.org");
 			} else if (e.getAction() == "den.*" && Helper.getFwLevels().get(e.getLevel()) > 3) {
 				// TODO: implement stats action
 			}
