@@ -13,18 +13,54 @@ import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
+import events.correlator.Pheidippides.database.DbConnector;
+
 @Path("/servicerequests")
 @Consumes(MediaType.APPLICATION_JSON)
 
 public class ServiceRequest {
 	
+	private DbConnector dbc;
+
+	public ServiceRequest() throws ClassNotFoundException {
+		try {
+			dbc = new DbConnector();
+		} catch (ClassNotFoundException e) {
+
+			System.out.println("Inside ServiceRequest constructor");
+			System.out.println(e.getClass().getName());
+		}
+	}
+
+	public ServiceRequest(DbConnector dbc) {
+		this.dbc = dbc;
+	}
+	
 	@GET
 	@Path("/ip")
-	public String makeRequest(@QueryParam("address") String address) {
+	public boolean checkIP(@QueryParam("ip") String ip){
+		String address="http://ip-api.com/json/"+ip;
+		try {
+			//get the country and city from "ip-api" and save them to DB
+			JSONObject data=new JSONObject(makeRequest(address));
+			String city=data.getString("city");
+			String country=data.getString("country");
+			return dbc.insertBlackList(ip, country, city);
+			
+		} catch (JSONException e) {
+			System.out.println("Error while parsing JSON. ServiceREquest.checkIp()");
+		}
+		return false;
+		
+	}
+	
+	public String makeRequest(String address) {
 
 		  try {
-
-			URL url = new URL("http://ip-api.com/json/"+address);
+			URL url = new URL(address);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("GET");
 			conn.setRequestProperty("Accept", "application/json");
@@ -47,7 +83,6 @@ public class ServiceRequest {
 			}
 
 			conn.disconnect();
-			System.out.println(output);
 			return result;
 
 		  } catch (MalformedURLException e) {

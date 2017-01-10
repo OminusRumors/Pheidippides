@@ -80,6 +80,26 @@ public final class DbConnector {
 //			}
 //		}
 	}
+	
+	public boolean insertBlackList(String ip, String country, String city){
+		PreparedStatement stm=null;
+		try{
+			con.setAutoCommit(false);
+			String sql="INSERT INTO blacklist VALUES (?,?,?)";
+			stm = con.prepareStatement(sql);
+			
+			stm.setString(1, ip);
+			stm.setString(2, country);	
+			stm.setString(3, city);
+			stm.executeUpdate();
+			con.commit();
+			return true;
+		}
+		catch(SQLException e) {
+			System.out.println("DBCOnnect.insertBlacklist: " + e.getLocalizedMessage());
+			return false;
+		} 
+	}
 
 	public List<FwEvent> getFwByType(String type, Calendar start, Calendar end) {
 		Statement stm = null;
