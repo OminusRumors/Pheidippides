@@ -358,7 +358,7 @@ public class MsRuler {
 	}
 	
 	//network policy server denied access to a user
-	public void checkId6273(Calendar start, Calendar end){
+	public void checkId6273(String start, String end){
 		List<MsEvent> orgList=dbc.getMsByEventId(6273, false, start, end);
 		
 		if (!orgList.isEmpty()){

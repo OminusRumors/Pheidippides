@@ -40,6 +40,12 @@ public class ServiceRequest {
 	}
 	
 	@GET
+	@Path("/cert")
+	public void updateCert(){
+		
+	}
+	
+	@GET
 	@Path("/ip")
 	public boolean checkIP(@QueryParam("ip") String ip){
 		String address="http://ip-api.com/json/"+ip;
@@ -52,12 +58,13 @@ public class ServiceRequest {
 			
 		} catch (JSONException e) {
 			System.out.println("Error while parsing JSON. ServiceREquest.checkIp()");
-		}
-		return false;
-		
+			String city="unknown";
+			String country="unknown";
+			return dbc.insertBlackList(ip, country, city);
+		}		
 	}
 	
-	public String makeRequest(String address) {
+	private String makeRequest(String address) {
 
 		  try {
 			URL url = new URL(address);
